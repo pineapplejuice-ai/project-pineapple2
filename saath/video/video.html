@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920,height=1080">
+<title>Saath Prototype Video</title>
+<!-- Drives the real prototype (../src/app.js) with a scripted timeline. Every frame is a pure function of t. -->
+<link rel="stylesheet" href="../src/app.css">
+<style>
+@font-face{font-family:"Inter";font-weight:400;src:url(fonts/inter-latin-400-normal.woff2)}
+@font-face{font-family:"Inter";font-weight:500;src:url(fonts/inter-latin-500-normal.woff2)}
+@font-face{font-family:"Inter";font-weight:600;src:url(fonts/inter-latin-600-normal.woff2)}
+@font-face{font-family:"Inter";font-weight:700;src:url(fonts/inter-latin-700-normal.woff2)}
+@font-face{font-family:"Bricolage Grotesque";font-weight:500;src:url(fonts/bricolage-grotesque-latin-500-normal.woff2)}
+@font-face{font-family:"Bricolage Grotesque";font-weight:600;src:url(fonts/bricolage-grotesque-latin-600-normal.woff2)}
+@font-face{font-family:"Bricolage Grotesque";font-weight:700;src:url(fonts/bricolage-grotesque-latin-700-normal.woff2)}
+@font-face{font-family:"Bricolage Grotesque";font-weight:800;src:url(fonts/bricolage-grotesque-latin-800-normal.woff2)}
+@font-face{font-family:"Noto Sans Kannada";font-weight:400;src:url(fonts/noto-sans-kannada-kannada-400-normal.woff2)}
+@font-face{font-family:"Noto Sans Kannada";font-weight:500;src:url(fonts/noto-sans-kannada-kannada-500-normal.woff2)}
+@font-face{font-family:"Noto Sans Kannada";font-weight:600;src:url(fonts/noto-sans-kannada-kannada-600-normal.woff2)}
+@font-face{font-family:"Noto Sans Kannada";font-weight:700;src:url(fonts/noto-sans-kannada-kannada-700-normal.woff2)}
+@font-face{font-family:"Noto Sans Devanagari";font-weight:400;src:url(fonts/noto-sans-devanagari-devanagari-400-normal.woff2)}
+@font-face{font-family:"Noto Sans Devanagari";font-weight:500;src:url(fonts/noto-sans-devanagari-devanagari-500-normal.woff2)}
+@font-face{font-family:"Noto Sans Devanagari";font-weight:600;src:url(fonts/noto-sans-devanagari-devanagari-600-normal.woff2)}
+@font-face{font-family:"Noto Sans Devanagari";font-weight:700;src:url(fonts/noto-sans-devanagari-devanagari-700-normal.woff2)}
+:root{--st-bg:#0B0A1F;--st-ink:#EDEDFB;--st-mu:#9A9CC6;--st-line:#24234A;--mari:#F2A200;--ind:#8C90FF}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--st-bg)}
+body{font-family:Inter,"Noto Sans Devanagari","Noto Sans Kannada",sans-serif;color:var(--st-ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;overflow:hidden;background:radial-gradient(1000px 760px at 33% 48%,#1D1B52 0%,#100F2C 52%,#08071A 100%)}
+.glow{position:absolute;border-radius:50%;filter:blur(110px)}
+#dots{position:absolute;inset:0;opacity:.35;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.4px);background-size:28px 28px;mask-image:radial-gradient(800px 600px at 35% 50%,#000 20%,transparent 75%)}
+#brand{position:absolute;left:80px;top:54px;display:flex;align-items:center;gap:14px;font-family:"Bricolage Grotesque",Inter;font-weight:800;font-size:24px}
+#brand .tag{font-family:Inter;font-weight:500;font-size:13px;color:var(--st-mu);border-left:1px solid #2E2D5C;padding-left:14px;letter-spacing:.04em}
+#disc{position:absolute;right:80px;top:58px;font-size:13px;color:var(--st-mu);display:flex;gap:9px;align-items:center;border:1px solid #2A2958;border-radius:999px;padding:8px 15px;background:rgba(14,13,36,.6)}
+#disc b{color:var(--mari)}
+#phone{position:absolute;left:436px;top:118px;width:414px;height:868px;border-radius:60px;background:#05040F;padding:12px;box-shadow:0 0 0 1.5px #3A3970,0 0 0 8px #0B0A1F,0 0 0 9.5px #2A2958,0 50px 140px rgba(0,0,0,.6),0 0 120px rgba(140,144,255,.10)}
+#phone .side{position:absolute;right:-12px;width:4px;border-radius:2px;background:#2A2958}
+#scr{position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden}
+#app{width:390px;height:844px}
+#who{position:absolute;left:436px;width:414px;top:70px;display:flex;justify-content:center}
+#who .pill{display:flex;align-items:center;gap:10px;height:34px;padding:0 14px 0 6px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid #2E2D5C;font-size:14px;font-weight:600}
+#who .av2{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Bricolage Grotesque";font-weight:800;font-size:12px}
+#who .sub{color:var(--st-mu);font-weight:500}
+.cap{position:absolute;left:1010px;top:262px;width:780px}
+.cap .k{font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mari)}
+.cap h2{font-family:"Bricolage Grotesque",Inter;font-weight:700;font-size:62px;line-height:1.04;letter-spacing:-.025em;margin:20px 0 30px}
+.cap ul{list-style:none}
+.cap li{display:flex;gap:16px;align-items:flex-start;font-size:23px;line-height:1.42;color:#C9CAEA;margin:15px 0}
+.cap li .d{width:26px;height:26px;border-radius:9px;background:rgba(140,144,255,.14);color:var(--ind);display:flex;align-items:center;justify-content:center;flex:none;margin-top:3px}
+.cap li b{color:#fff;font-weight:650}
+.cap .indic{font-family:"Noto Sans Kannada","Noto Sans Devanagari",Inter}
+#chapters{position:absolute;left:1010px;right:110px;bottom:86px;display:flex;gap:10px}
+#chapters .ch{flex:1}
+#chapters .bar{height:3px;border-radius:2px;background:#1E1D44;overflow:hidden}
+#chapters .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mari),#FFD27A)}
+#chapters .lb{font-size:12px;color:#6E70A0;margin-top:10px;white-space:nowrap}
+#chapters .ch.on .lb{color:var(--st-ink)}
+#intro,#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.wm{font-family:"Bricolage Grotesque";font-weight:800;font-size:120px;letter-spacing:-.03em;line-height:1;margin-top:34px}
+.mean{font-size:22px;color:var(--st-mu);margin-top:16px;letter-spacing:.04em}
+.mean span{font-family:"Noto Sans Devanagari","Noto Sans Kannada";color:#fff}
+.tagl{font-family:"Bricolage Grotesque";font-weight:600;font-size:36px;margin-top:22px;letter-spacing:-.01em}
+.facts{display:flex;gap:14px;align-items:center;margin-top:40px;font-size:17px;color:var(--st-mu);letter-spacing:.04em}
+.facts i{width:4px;height:4px;border-radius:50%;background:#3A3970}
+#cursor{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;z-index:200;background:rgba(255,255,255,.32);border:2px solid rgba(255,255,255,.95);box-shadow:0 4px 18px rgba(0,0,0,.4);pointer-events:none}
+#ripple{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;z-index:199;border:2px solid rgba(255,255,255,.95);pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="dots"></div>
+  <div class="glow" style="left:250px;top:220px;width:640px;height:640px;background:rgba(108,112,255,.16)"></div>
+  <div class="glow" id="glowR" style="left:1260px;top:560px;width:560px;height:420px;background:rgba(242,162,0,.07)"></div>
+
+  <div id="intro">
+    <svg id="logoI" width="150" height="150" viewBox="0 0 48 48"></svg>
+    <div class="wm" id="iwm">Saath</div>
+    <div class="mean" id="imean"><span>साथ</span> · <span>ಜೊತೆ</span> · together</div>
+    <div class="tagl" id="itag">Care for your parents, from wherever you are.</div>
+  </div>
+
+  <div id="brand"><svg width="34" height="34" viewBox="0 0 48 48" class="logo"></svg>Saath<span class="tag">Product prototype · Android</span></div>
+  <div id="disc"><b>●</b> Concept prototype — illustrative people and data</div>
+
+  <div id="who"><div class="pill"><span class="av2" id="whoAv"></span><span id="whoName"></span><span class="sub" id="whoSub"></span></div></div>
+
+  <div id="caps"></div>
+  <div id="chapters"></div>
+
+  <div id="phone"><div class="side" style="top:190px;height:64px"></div><div class="side" style="top:280px;height:110px"></div>
+    <div id="scr"><div id="app"></div><div id="ripple"></div><div id="cursor"></div></div></div>
+
+  <div id="outro">
+    <svg width="120" height="120" viewBox="0 0 48 48" class="logo"></svg>
+    <div class="wm" style="font-size:104px">Saath</div>
+    <div class="tagl">Care for your parents, from wherever you are.</div>
+    <div class="facts">Daily voice check-ins in Kannada, Hindi, Tamil, Telugu <i></i> Verified local Sahayaks <i></i> UPI <i></i> ABHA-ready</div>
+    <div class="facts" style="margin-top:14px;font-size:15px">Pilot: Mysuru · plans from ₹499 a month</div>
+  </div>
+</div>
+
+<script src="../src/app.js"></script>
+<script>
+(function(){
+const LOGO='<rect width="48" height="48" rx="14" fill="#3A3DB5"/><path class="roof" d="M12 25L24 14l12 11" fill="none" stroke="#F2A200" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle class="d1" cx="19" cy="31" r="4" fill="#fff"/><circle class="d2" cx="29" cy="31" r="4" fill="#fff" opacity=".75"/>';
+document.querySelectorAll('.logo,#logoI').forEach(s=>s.innerHTML=LOGO);
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, eout=x=>1-Math.pow(1-x,3), lerp=(a,b,x)=>a+(b-a)*x;
+const P=(t,a,b,e=eio)=>e(clamp((t-a)/(b-a)));
+function win(t,a,b,fi=.45,fo=.45){if(t<a||t>b)return 0;return eio(Math.min(clamp((t-a)/fi),clamp((b-t)/fo)))}
+function show(el,o,tr){el.style.opacity=o.toFixed(3);el.style.visibility=o<.002?'hidden':'visible';if(tr!==undefined)el.style.transform=tr}
+const CHK='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+/* ---------- chapters & captions ---------- */
+const CH=[
+ ['Today',5,13.4,'01 · Today','Both parents,<br>at a glance.',['Each morning’s check-in, medicines and appointments in one view','Gaps stand out — like <b>no one going with Appa</b> to the doctor','For children in Bengaluru, Pune or Dubai with parents in tier-2 towns']],
+ ['Voice check-in',13.4,28.8,'02 · Voice check-in','A phone call,<br>in her language.',['Works on <b>any phone</b> — no smartphone, app or reading needed','Kannada, Hindi, Tamil, Telugu and more','Press 1 or 2 to answer. <b>Press 9 for help.</b>']],
+ ['Escalation',28.8,42.6,'03 · Escalation','No answer?<br>Plan B starts itself.',['Retry → family → neighbour → <b>Sahayak at the door</b>','Parents agree to the calls and can pause them anytime','Peace of mind without ten worried phone calls']],
+ ['Sahayak',42.6,55.6,'04 · Sahayak','Trusted local help,<br>booked in a minute.',['<b>Police- and ID-verified</b>, first-aid trained helpers','Doctor visits, bank and pension work, medicines, repairs','Pay with <b>UPI</b> — or send the request to a sibling']],
+ ['Visit',55.6,66,'05 · Visit tracking','Every visit,<br>documented.',['Live status and a photo check-in','The doctor’s advice written down — nothing lost','Prescription saved straight into records']],
+ ['Records',66,74.2,'06 · Records','Ready for<br>any hospital.',['Emergency card: blood group, allergies, conditions, medicines','A QR for the hospital desk, valid for 24 hours','<b>ABHA</b> linking on India’s digital health network (planned)']],
+ ['Emergency',74.2,87.6,'07 · Emergency','Help in minutes,<br>not hours.',['One big button on the parent’s phone','<b>Neighbour, Sahayak and siblings</b> alerted together','112 always one tap away']],
+ ['Family',87.6,95.4,'08 · Family circle','Siblings share the care<br>— and the cost.',['Tasks and expenses split across cities and countries','Plans from <b>₹499 a month</b> with UPI AutoPay','Parents’ dignity first: consent and control, not surveillance']]
+];
+$('caps').innerHTML=CH.map((c,i)=>`<div class="cap" id="cap${i}"><div class="k">${c[3]}</div><h2>${c[4]}</h2><ul>${c[5].map(b=>`<li><span class="d">${CHK}</span><span>${b}</span></li>`).join('')}</ul></div>`).join('');
+$('chapters').innerHTML=CH.map(c=>`<div class="ch"><div class="bar"><i></i></div><div class="lb">${c[0]}</div></div>`).join('');
+const capEls=CH.map((c,i)=>$('cap'+i)), chEls=[...document.querySelectorAll('#chapters .ch')];
+
+/* ---------- scripted timeline ---------- */
+const EV=[
+ ['scroll','today',8.6,10.0,300], ['scroll','today',11.4,12.4,0],
+ ['act',13.4,'scenario','call'],
+ ['tap',16.0,'#answer'], ['tap',19.2,'#key-1'], ['tap',22.6,'#key-1'], ['tap',26.6,'#end-call'],
+ ['act',28.8,'role','child'],
+ ['tap',32.6,'#card-amma'], ['tap',35.0,'#open-checkin'], ['scroll','checkin',36.6,38.6,9999],
+ ['tap',40.6,'.sa-layer.cur .back'], ['tap',41.6,'.sa-layer.cur .back'],
+ ['tap',43.0,'#book-from-today'], ['scroll','book',45.0,46.6,330],
+ ['tap',48.6,'#pay-btn'], ['tap',50.4,'#pay-now'], ['tap',53.2,'#pay-done'], ['tap',55.2,'#track-btn'],
+ ['act',57.0,'visitNext'], ['act',58.8,'visitNext'], ['act',60.6,'visitNext'], ['act',62.4,'visitNext'],
+ ['scroll','visit',63.0,64.6,9999],
+ ['tap',66.2,'.sa-layer.cur .back'], ['tap',67.0,'.sa-layer.cur .back'], ['tap',68.0,'#tab-records'],
+ ['tap',70.2,'#show-qr'], ['tap',73.0,'.sa-sheet .btn-sec'],
+ ['act',74.2,'role','parent'], ['tap',76.4,'#p-help'],
+ ['act',79.6,'role','child'], ['tap',86.0,'#resolve'],
+ ['tap',88.0,'#tab-family'], ['scroll','family',89.6,90.8,240], ['act',92.2,'kPays']
+].map(e=>e[0]==='scroll'?{type:'scroll',scr:e[1],t0:e[2],t1:e[3],to:e[4],t:e[2]}:e[0]==='tap'?{type:'tap',t:e[1],sel:e[2]}:{type:'act',t:e[1],a:e[2],arg:e[3]});
+const SCROLLS=EV.filter(e=>e.type==='scroll');
+const STEPS=EV.filter(e=>e.type!=='scroll').sort((a,b)=>a.t-b.t);
+
+const root=$('app');
+const app=Saath.mount(root,{mode:'video',framed:true});
+const clone=o=>JSON.parse(JSON.stringify(o));
+function applyScroll(t){
+  const sc=root.querySelector('.sa-layer.cur .sa-scroll'); if(!sc) return;
+  const s=app.state, since=s.nav?s.nav.at:-1, evs=SCROLLS.filter(e=>e.scr===s.screen&&e.t0>=since-.01&&e.t0<=t);
+  let v=0; for(const e of evs){ const to=Math.min(e.to,sc.scrollHeight-sc.clientHeight); v= t>=e.t1? to : lerp(v,to,eio((t-e.t0)/(e.t1-e.t0))); }
+  sc.scrollTop=v;
+}
+// pre-pass: replay the script once, recording state snapshots and tap positions
+const snaps=[{t:-1,st:clone(app.state)}], taps=[], roleChanges=[];
+app.time=0; app.render();
+for(const e of STEPS){
+  app.time=e.t; app.render(); applyScroll(e.t);
+  if(e.type==='tap'){
+    const el=root.querySelector(e.sel); if(!el) throw new Error('missing '+e.sel+' at '+e.t);
+    const r=el.getBoundingClientRect(), R=root.getBoundingClientRect();
+    taps.push({t:e.t,x:r.left-R.left+r.width/2,y:r.top-R.top+r.height/2});
+    app.clickEl(el);
+  } else app.dispatch(e.a,e.arg);
+  if(e.a==='role'||(e.a==='scenario'&&e.arg==='call')) roleChanges.push(e.t);
+  snaps.push({t:e.t,st:clone(app.state)});
+}
+let lastI=-1;
+function snapAt(t){let i=0;while(i<snaps.length-1&&snaps[i+1].t<=t)i++;return i}
+
+function cursorAt(t){
+  let p=null,n=null; for(const k of taps){ if(k.t<=t) p=k; else { n=k; break; } }
+  let x,y;
+  if(n&&t>n.t-.8){ const from=p&&n.t-p.t<2.2?p:{x:n.x+40,y:n.y+110}; const q=eio(clamp((t-(n.t-.8))/.68)); x=lerp(from.x,n.x,q); y=lerp(from.y,n.y,q); }
+  else if(p){ x=p.x; y=p.y; } else { x=300; y=600; }
+  const a=Math.max(n?clamp((1.25-(n.t-t))/.3):0, p?clamp((1.0-(t-p.t))/.3):0);
+  let press=0,rip=-1; for(const k of taps){ press=Math.max(press,win(t,k.t-.12,k.t+.18,.1,.15)); if(t>=k.t&&t<k.t+.55) rip=(t-k.t)/.55; }
+  return {x,y,a,press,rip};
+}
+
+function render(t){
+  const inPhone=t>=4.2&&t<96.2;
+  /* app */
+  const i=snapAt(t);
+  if(i!==lastI){ app.state=clone(snaps[i].st); app.time=t; app.render(); lastI=i; }
+  app.time=t; applyScroll(t); app.animate(t);
+  /* intro / outro */
+  const io=1-P(t,3.9,4.7); show($('intro'),io);
+  const lg=$('logoI'); lg.style.transform=`scale(${lerp(.6,1,P(t,.2,1.1,eout))})`; lg.style.opacity=P(t,.2,.8);
+  const roof=lg.querySelector('.roof'); roof.style.strokeDasharray=40; roof.style.strokeDashoffset=40*(1-P(t,.5,1.3));
+  lg.querySelector('.d1').style.opacity=P(t,1.1,1.4); lg.querySelector('.d2').style.opacity=.75*P(t,1.3,1.6);
+  show($('iwm'),P(t,.8,1.5),`translateY(${lerp(16,0,P(t,.8,1.6,eout))}px)`);
+  show($('imean'),P(t,1.5,2.1)); show($('itag'),P(t,2.0,2.7),`translateY(${lerp(12,0,P(t,2,2.8,eout))}px)`);
+  show($('outro'),P(t,96.6,97.8),`translateY(${lerp(20,0,P(t,96.6,97.8,eout))}px)`);
+  const chrome=win(t,4.3,100,.6,.1)*(1-P(t,95.8,96.5));
+  show($('brand'),chrome); show($('chapters'),chrome); show($('disc'),win(t,4.3,102,.6,.1));
+  show($('phone'),win(t,4.0,96.6,1.0,.7),`translateY(${lerp(50,0,P(t,4,5.1,eout))}px)`);
+  /* persona label */
+  const role=app.state.role; let dip=0; for(const rc of roleChanges) dip=Math.max(dip,win(t,rc-.2,rc+.35,.2,.2));
+  const parent=role==='parent';
+  $('whoAv').textContent=parent?'L':'P'; $('whoAv').style.background=parent?'#FFF2D4':'#3A3DB5'; $('whoAv').style.color=parent?'#8A5300':'#fff';
+  $('whoName').textContent=parent?'Amma’s phone':'Priya’s phone'; $('whoSub').textContent=parent?'Lakshmi, 66 · Mysuru':'Daughter · Bengaluru';
+  show($('who'),win(t,4.6,96.2,.6,.4)*(1-dip*.85));
+  /* captions + chapter bar */
+  CH.forEach((c,k)=>{ const [,a,b]=c; show(capEls[k],win(t,a+.15,b,.6,.45),`translateY(${lerp(18,0,P(t,a+.15,a+.85,eout))}px)`);
+    chEls[k].classList.toggle('on',t>=a&&t<b); chEls[k].querySelector('i').style.width=(clamp((t-a)/(b-a))*100)+'%'; });
+  $('glowR').style.background = t>74.2&&t<87.6 ? 'rgba(211,52,52,.10)' : 'rgba(242,162,0,.07)';
+  /* cursor */
+  const c=cursorAt(t);
+  const cu=$('cursor'), ri=$('ripple');
+  cu.style.transform=`translate(${c.x}px,${c.y}px) scale(${1-c.press*.22})`; cu.style.opacity=inPhone?c.a:0;
+  if(c.rip>=0&&inPhone){ ri.style.opacity=(1-c.rip)*c.a; ri.style.transform=`translate(${c.x}px,${c.y}px) scale(${1+c.rip*1.6})`; } else ri.style.opacity=0;
+}
+window.renderAt=render; window.DURATION=101;
+if(!/render=1/.test(location.search)){ const t0=performance.now(); const loop=()=>{ render(((performance.now()-t0)/1000)%window.DURATION); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+else render(0);
+})();
+</script>
+</body>
+</html>
