@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920,height=1080">
+<title>FLOWSTATE Prototype</title>
+<!--
+  FLOWSTATE — concept prototype video source.
+  Every visual state is a pure function of time t (seconds), so frames can be
+  rendered deterministically (see render.js). Open this file directly in a
+  browser to preview it in real time.
+  All place names, durations and numbers shown are ILLUSTRATIVE, not live data.
+-->
+<style>
+:root{
+  --ink:#0A1620; --sf:#112230; --sf2:#172B3A; --line:rgba(255,255,255,.08);
+  --tx:#EAF2F7; --mu:#8EA3B4; --mu2:#5E7487;
+  --teal:#2DD4BF; --teal2:#14B8A6; --amber:#FFB547; --red:#FF5A5F; --blue:#4CC3FF; --green:#4ADE80;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#04070A}
+body{font-family:Inter,system-ui,sans-serif;color:var(--tx);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+.disp{font-family:"Inter Display",Inter,sans-serif}
+.mono{font-family:"JetBrains Mono",monospace}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#stage{position:absolute;inset:0;overflow:hidden;
+  background:radial-gradient(1100px 760px at 33% 45%,#0F2533 0%,#08131B 55%,#04080B 100%)}
+#grid{position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(900px 700px at 40% 50%,#000 30%,transparent 80%)}
+.glow{position:absolute;border-radius:50%;filter:blur(90px)}
+/* ---------- stage chrome ---------- */
+#brand{position:absolute;left:80px;top:56px;display:flex;align-items:center;gap:14px}
+#brand .wm{font-weight:700;letter-spacing:.24em;font-size:17px}
+#brand .tag{font-size:13px;color:var(--mu);letter-spacing:.06em;border-left:1px solid #22384A;padding-left:14px}
+#disclaimer{position:absolute;right:80px;top:60px;font-size:13px;color:var(--mu);display:flex;gap:8px;align-items:center;
+  border:1px solid #1F3445;border-radius:999px;padding:8px 14px;background:rgba(10,22,32,.6)}
+#disclaimer b{color:var(--amber);font-weight:600}
+#chapters{position:absolute;left:1000px;right:120px;bottom:88px;display:flex;gap:10px}
+#chapters .ch{flex:1}
+#chapters .bar{height:3px;border-radius:2px;background:#16283A;overflow:hidden}
+#chapters .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),#5EEAD4)}
+#chapters .lb{font-size:12px;color:var(--mu2);margin-top:10px;letter-spacing:.04em;white-space:nowrap}
+#chapters .ch.on .lb{color:var(--tx)}
+/* ---------- captions ---------- */
+.cap{position:absolute;left:1000px;top:250px;width:780px}
+.cap .k{font-family:"JetBrains Mono",monospace;font-size:16px;color:var(--teal);letter-spacing:.14em;text-transform:uppercase}
+.cap h2{font-family:"Inter Display",Inter;font-weight:600;font-size:58px;line-height:1.06;letter-spacing:-.02em;margin:22px 0 30px}
+.cap ul{list-style:none}
+.cap li{display:flex;gap:16px;align-items:flex-start;font-size:23px;line-height:1.4;color:#C6D4DF;margin:16px 0}
+.cap li .dot{width:26px;height:26px;border-radius:8px;background:rgba(45,212,191,.12);color:var(--teal);display:flex;align-items:center;justify-content:center;flex:none;margin-top:3px}
+.cap li .dot svg{width:16px;height:16px;stroke-width:2.6}
+.cap li b{color:#fff;font-weight:600}
+.cap .mono-chip{display:inline-block;font-family:"JetBrains Mono";font-size:18px;background:#10222F;border:1px solid #1E3546;border-radius:8px;padding:1px 8px;color:#9FE9DD}
+/* ---------- intro / outro ---------- */
+#intro,#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.logo{width:132px;height:132px}
+.bigwm{font-family:"Inter Display",Inter;font-weight:700;font-size:96px;letter-spacing:.2em;margin-top:34px;padding-left:.2em}
+.tagline{font-size:28px;color:#B9C8D4;margin-top:18px;letter-spacing:.01em}
+.stack{margin-top:46px;font-size:17px;color:var(--mu);letter-spacing:.08em;display:flex;gap:14px;align-items:center}
+.stack i{width:4px;height:4px;border-radius:50%;background:#2B4254;display:inline-block}
+/* ---------- phone ---------- */
+#phone{position:absolute;left:432px;top:96px;width:414px;height:888px;border-radius:60px;background:#0A0E12;padding:12px;
+  box-shadow:0 0 0 1.5px #33414E,0 0 0 8px #0E1419,0 0 0 9.5px #26323D,0 50px 140px rgba(0,0,0,.65),0 0 120px rgba(45,212,191,.07)}
+#phone .btnside{position:absolute;right:-12px;width:4px;border-radius:2px;background:#26323D}
+#screen{position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden;background:var(--ink);isolation:isolate}
+.scr{position:absolute;inset:0;will-change:opacity,transform}
+.abs{position:absolute}
+#status{position:absolute;left:0;right:0;top:0;height:40px;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:6px 28px 0 30px;font-size:14px;font-weight:600}
+#status .cam{position:absolute;left:50%;top:13px;width:13px;height:13px;margin-left:-6.5px;border-radius:50%;background:#000;box-shadow:0 0 0 2px #10161B}
+#gesture{position:absolute;left:50%;bottom:8px;width:118px;height:4px;margin-left:-59px;border-radius:2px;background:rgba(255,255,255,.55);z-index:60}
+/* map */
+#map{position:absolute;left:0;top:0}
+#mapOv{position:absolute;inset:0;pointer-events:none}
+#mapOv > div{position:absolute;left:0;top:0;will-change:transform}
+.town{font-size:11px;font-weight:600;color:#9DB2C2;letter-spacing:.04em;text-shadow:0 1px 3px #000,0 0 6px #0A1620;white-space:nowrap;transform:translate(-50%,-50%)}
+.town.big{font-size:13px;color:#D8E4EC}
+.bubble{transform:translate(-50%,-130%);padding:5px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;background:#132636;color:#C9D7E2;border:1px solid #28445A;box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.bubble.sel{background:var(--teal);color:#032421;border-color:transparent}
+.pin{width:30px;height:30px;transform:translate(-50%,-100%)}
+.wp{width:24px;height:24px;border-radius:50%;background:#fff;color:#0A1620;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);box-shadow:0 0 0 3px var(--teal),0 4px 10px rgba(0,0,0,.6)}
+.callout{transform:translate(-50%,-100%);font-size:11px;font-weight:600;padding:5px 8px;border-radius:8px;white-space:nowrap;background:rgba(255,181,71,.16);border:1px solid rgba(255,181,71,.5);color:#FFD596;backdrop-filter:blur(2px)}
+/* app components */
+.card{background:var(--sf);border:1px solid var(--line);border-radius:20px}
+.glass{background:rgba(15,31,43,.88);border:1px solid rgba(255,255,255,.07);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#0E1C27;border-radius:28px 28px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.5);border-top:1px solid rgba(255,255,255,.06)}
+.handle{position:absolute;left:50%;top:9px;width:38px;height:4px;margin-left:-19px;border-radius:2px;background:#2A3F50}
+.btn{position:absolute;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:650;font-size:16px}
+.btn.pri{background:linear-gradient(135deg,#34E0CB,#14B8A6);color:#03211D;box-shadow:0 8px 22px rgba(20,184,166,.28)}
+.btn.sec{background:#162A39;color:var(--tx);border:1px solid #24394A}
+.btn.dis{background:#16262F;color:#557080;box-shadow:none}
+.lbl{font-size:11.5px;font-weight:600;letter-spacing:.12em;color:var(--mu2);text-transform:uppercase}
+.t15{font-size:15px;font-weight:600}.t13{font-size:13px}.t12{font-size:12px}.mu{color:var(--mu)}
+.row{display:flex;align-items:center;gap:12px}
+.icn{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.chip{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:12px;background:#142837;border:1px solid #223A4C;font-size:13.5px;font-weight:600;color:#CFDCE6;white-space:nowrap}
+.chip svg{width:16px;height:16px}
+.chip.on{background:var(--teal);border-color:var(--teal);color:#03211D}
+.rcard{position:absolute;left:12px;right:12px;height:84px;border-radius:18px;background:#13232F;border:1px solid #1E3343;overflow:hidden}
+.rcard .stripe{position:absolute;left:0;top:0;bottom:0;width:4px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;border-radius:7px;padding:2px 7px}
+.shim{position:absolute;left:12px;right:12px;height:84px;border-radius:18px;background:linear-gradient(90deg,#12212C 0%,#1A2E3C 50%,#12212C 100%);background-size:300% 100%}
+.nav{position:absolute;left:0;right:0;bottom:0;height:64px;background:#0B1720;border-top:1px solid #15252F;display:flex;justify-content:space-around;padding-top:9px}
+.nav div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:#6F8597;font-weight:600;width:70px}
+.nav div.on{color:var(--teal)}
+.nav div.on svg{background:rgba(45,212,191,.14);border-radius:10px;width:44px;padding:0 10px}
+.nav svg{width:22px;height:22px}
+.toggle{width:44px;height:26px;border-radius:13px;background:var(--teal2);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.toggle.off{background:#2A3C4A}.toggle.off::after{right:auto;left:3px;background:#9AB0BF}
+.spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(3,33,29,.25);border-top-color:#03211D}
+.spinner.lt{border-color:rgba(255,255,255,.18);border-top-color:var(--teal)}
+.snack{position:absolute;left:16px;right:16px;height:52px;border-radius:14px;background:#E8F1F6;color:#0A1620;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#cursor{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;z-index:100;
+  background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.85);box-shadow:0 4px 18px rgba(0,0,0,.45)}
+#ripple{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;z-index:99;border:2px solid rgba(255,255,255,.9)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grid"></div>
+  <div class="glow" style="left:240px;top:200px;width:620px;height:620px;background:rgba(20,184,166,.10)"></div>
+  <div class="glow" id="glowR" style="left:1240px;top:520px;width:520px;height:420px;background:rgba(255,181,71,.05)"></div>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <svg class="logo" id="introLogo" viewBox="0 0 132 132"></svg>
+    <div class="bigwm" id="introWm">FLOWSTATE</div>
+    <div class="tagline" id="introTag">Smarter journeys. Better stops. Help when it matters.</div>
+  </div>
+
+  <!-- CHROME -->
+  <div id="brand"><svg width="30" height="30" viewBox="0 0 132 132" class="logoSm"></svg><span class="wm">FLOWSTATE</span><span class="tag">Product prototype · Android</span></div>
+  <div id="disclaimer"><b>●</b> Concept prototype — illustrative data, not live results</div>
+
+  <!-- CAPTIONS -->
+  <div class="cap" id="cap1"><div class="k">01 · Journey search</div><h2>Plan from<br>where you are.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span>Google Places autocomplete with <b>session tokens</b> and debounced typing</span></li>
+    <li><span class="dot" data-i="check"></span><span>Current location, swap, recent and saved journeys</span></li>
+    <li><span class="dot" data-i="check"></span><span>Every place resolved to <b>exact coordinates</b> before routing</span></li></ul></div>
+  <div class="cap" id="cap2"><div class="k">02 · Traffic intelligence</div><h2>Compare routes<br>with live traffic.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span>Routes API <span class="mono-chip">TRAFFIC_AWARE_OPTIMAL</span> with alternatives</span></li>
+    <li><span class="dot" data-i="check"></span><span>Congestion drawn only from <b>traffic-on-polyline</b> data</span></li>
+    <li><span class="dot" data-i="check"></span><span>Honest labels: “fastest among available alternatives”</span></li>
+    <li><span class="dot" data-i="check"></span><span>A freshness timestamp on every result</span></li></ul></div>
+  <div class="cap" id="cap3"><div class="k">03 · Intelligent stops</div><h2>Stops ranked by the<br>detour you’ll drive.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span><b>Search Along Route</b> on your selected route polyline</span></li>
+    <li><span class="dot" data-i="check"></span><span>You pick the category — no blanket searches</span></li>
+    <li id="cap3x"><span class="dot" style="background:rgba(255,181,71,.14);color:var(--amber)" data-i="alert"></span><span>300 m from the highway can still mean <b style="color:var(--amber)">+17 minutes</b> of real driving</span></li></ul></div>
+  <div class="cap" id="cap4"><div class="k">04 · Detour engine</div><h2>Origin → stop →<br>destination, re-routed.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span>Added time = route with stop − baseline, under the <b>same traffic assumptions</b></span></li>
+    <li><span class="dot" data-i="check"></span><span>Detailed detours only for top candidates — cost under control</span></li>
+    <li><span class="dot" data-i="check"></span><span>Driving time only. Time spent at the stop is excluded — and labelled</span></li></ul></div>
+  <div class="cap" id="cap5"><div class="k">05 · Multi-stop journeys</div><h2>Your stops.<br>Your order.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span>Add, remove and reorder stops with intermediate waypoints</span></li>
+    <li><span class="dot" data-i="check"></span><span>Updated ETA, distance and added journey time</span></li>
+    <li><span class="dot" data-i="check"></span><span>Order is never changed silently — optimise only on request</span></li></ul></div>
+  <div class="cap" id="cap6"><div class="k">06 · Emergency hub</div><h2>Help when<br>it matters.</h2><ul>
+    <li><span class="dot" style="background:rgba(255,90,95,.14);color:var(--red)" data-i="phone"></span><span><b>112</b> opens your dialer — you place the call, never automatic</span></li>
+    <li><span class="dot" style="background:rgba(255,90,95,.14);color:var(--red)" data-i="check"></span><span>Works offline, independent of maps or network</span></li>
+    <li><span class="dot" style="background:rgba(255,90,95,.14);color:var(--red)" data-i="check"></span><span>Location shared only when <b>you</b> tap Share</span></li>
+    <li><span class="dot" style="background:rgba(255,90,95,.14);color:var(--red)" data-i="check"></span><span>Nearby hospitals without unverified capacity claims</span></li></ul></div>
+  <div class="cap" id="cap7"><div class="k">07 · Cost &amp; privacy</div><h2>Smart about<br>every request.</h2><ul>
+    <li><span class="dot" data-i="check"></span><span>Deduplication, cancellation and request fingerprints</span></li>
+    <li><span class="dot" data-i="check"></span><span>Field masks and per-session API budgets</span></li>
+    <li><span class="dot" data-i="check"></span><span>No background tracking. No ads. No login.</span></li></ul></div>
+
+  <div id="chapters"></div>
+
+  <!-- PHONE -->
+  <div id="phone">
+    <div class="btnside" style="top:190px;height:64px"></div><div class="btnside" style="top:280px;height:110px"></div>
+    <div id="screen">
+      <!-- MAP -->
+      <svg id="map" width="390" height="844"><rect width="390" height="844" fill="#0B1923"/><g id="cam"></g></svg>
+      <div id="mapOv"></div>
+
+      <!-- HOME -->
+      <div class="scr" id="sHome">
+        <div class="abs row" style="left:22px;top:50px;gap:10px"><svg width="26" height="26" viewBox="0 0 132 132" class="logoSm"></svg><span style="font-weight:700;letter-spacing:.2em;font-size:14px">FLOWSTATE</span></div>
+        <div class="abs glass" style="left:16px;right:16px;top:88px;height:128px">
+          <div class="abs row" style="left:16px;top:10px;right:60px">
+            <div style="width:18px;height:18px;border-radius:50%;border:3px solid var(--blue);box-shadow:0 0 0 4px rgba(76,195,255,.18)"></div>
+            <div><div class="t15">Current location</div><div class="t12 mu">Bengaluru · accuracy ±12 m</div></div></div>
+          <div class="abs" style="left:50px;right:62px;top:62px;height:1px;background:#21374A"></div>
+          <div class="abs" style="right:12px;top:45px;width:36px;height:36px;border-radius:12px;background:#1A3042;color:#BFD0DC;display:flex;align-items:center;justify-content:center" data-i="swap"></div>
+          <div class="abs row" style="left:16px;top:74px;right:60px">
+            <div style="width:18px;height:18px;border-radius:5px;background:var(--amber)"></div>
+            <div id="homeDest" style="font-size:17px;color:var(--mu)">Where to?</div></div>
+        </div>
+        <div class="abs row" style="left:16px;top:228px;gap:8px">
+          <span class="chip" style="background:rgba(15,31,43,.92)"><span data-i="clock"></span>Leave now<span data-i="down" style="opacity:.6"></span></span>
+          <span class="chip" style="background:rgba(15,31,43,.92)"><span data-i="car"></span>Traffic-aware</span></div>
+        <div class="sheet" style="top:486px;bottom:64px">
+          <div class="handle"></div>
+          <div class="abs lbl" style="left:20px;top:24px">Recent &amp; saved</div>
+          <div class="abs row" style="left:16px;right:16px;top:46px">
+            <div class="icn" style="background:#15293A;color:#9FB3C3" data-i="clock"></div>
+            <div style="flex:1"><div class="t15">Bengaluru → Mysuru</div><div class="t12 mu">NH 275 · Sunday</div></div><span data-i="next" style="color:#4D6577"></span></div>
+          <div class="abs row" style="left:16px;right:16px;top:100px">
+            <div class="icn" style="background:rgba(255,181,71,.12);color:var(--amber)" data-i="bookmark"></div>
+            <div style="flex:1"><div class="t15">Indiranagar → Hassan</div><div class="t12 mu">Saved · Weekend trip</div></div><span data-i="next" style="color:#4D6577"></span></div>
+          <div class="abs row" style="left:16px;right:16px;top:154px">
+            <div class="icn" style="background:#15293A;color:#9FB3C3" data-i="clock"></div>
+            <div style="flex:1"><div class="t15">Koramangala → Hassan</div><div class="t12 mu">NH 75 · Last week</div></div><span data-i="next" style="color:#4D6577"></span></div>
+          <div class="btn dis" id="homeBtn" style="left:16px;right:16px;top:226px"><span id="homeBtnTx">Compare routes</span></div>
+        </div>
+        <div class="nav"><div class="on"><span data-i="nav"></span>Plan</div><div><span data-i="bookmark"></span>Journeys</div><div style="color:#FF7B7F"><span data-i="shield"></span>SOS</div><div><span data-i="gear"></span>Settings</div></div>
+      </div>
+
+      <!-- AUTOCOMPLETE -->
+      <div class="scr" id="sAuto" style="background:var(--ink)">
+        <div class="abs" style="left:14px;top:60px;color:#BFD0DC" data-i="back"></div>
+        <div class="abs" style="left:52px;right:16px;top:46px;height:54px;border-radius:15px;background:#13283A;border:1.5px solid var(--teal);box-shadow:0 0 0 4px rgba(45,212,191,.12)">
+          <div class="abs t12" style="left:16px;top:7px;color:var(--teal);font-weight:600">To</div>
+          <div class="abs" style="left:16px;top:23px;font-size:17px;font-weight:500"><span id="typed"></span><span id="caret" style="display:inline-block;width:2px;height:19px;background:var(--teal);vertical-align:-3px;margin-left:1px"></span></div>
+          <div class="abs" style="right:12px;top:15px;color:#7C93A5" data-i="close"></div>
+        </div>
+        <div class="abs row" style="left:16px;right:16px;top:116px"><div class="icn" style="background:rgba(76,195,255,.12);color:var(--blue)" data-i="target"></div><div class="t15">Use current location</div></div>
+        <div class="abs row" style="left:16px;right:16px;top:168px"><div class="icn" style="background:#15293A;color:#9FB3C3" data-i="pin"></div><div class="t15">Choose on map</div></div>
+        <div class="abs" style="left:16px;right:16px;top:222px;height:1px;background:#1A2D3C"></div>
+        <div class="abs lbl" style="left:20px;top:236px">Suggestions</div>
+        <div id="sugs"></div>
+        <div class="abs t12" id="pbg" style="right:20px;top:528px;color:#6F8597">Powered by Google</div>
+      </div>
+
+      <!-- ROUTES -->
+      <div class="scr" id="sRoutes">
+        <div class="abs glass" style="left:16px;right:16px;top:88px;height:76px">
+          <div class="abs row" style="left:16px;top:12px;gap:10px"><div style="width:12px;height:12px;border-radius:50%;border:3px solid var(--blue)"></div><span class="t13" style="font-weight:600">Current location</span></div>
+          <div class="abs" style="left:21px;top:30px;width:2px;height:16px;background:#2B4356"></div>
+          <div class="abs row" style="left:16px;top:46px;gap:10px"><div style="width:12px;height:12px;border-radius:3px;background:var(--amber)"></div><span class="t13" style="font-weight:600">Hassan, Karnataka</span></div>
+          <div class="abs chip" style="right:12px;top:20px;height:34px;padding:0 10px;font-size:12.5px"><span data-i="clock"></span>Leave now</div>
+        </div>
+        <div class="abs row" style="right:16px;top:344px;gap:9px;height:26px;padding:0 10px;border-radius:9px;background:rgba(11,25,35,.9);border:1px solid #1E3546;font-size:11px;color:var(--mu);font-weight:600">
+          <span class="row" style="gap:4px"><i style="width:10px;height:4px;border-radius:2px;background:var(--teal)"></i>Free</span>
+          <span class="row" style="gap:4px"><i style="width:10px;height:4px;border-radius:2px;background:var(--amber)"></i>Slow</span>
+          <span class="row" style="gap:4px"><i style="width:10px;height:4px;border-radius:2px;background:var(--red)"></i>Jam</span></div>
+        <div class="sheet" id="routeSheet" style="top:380px">
+          <div class="handle"></div>
+          <div class="abs" style="left:20px;top:20px;font-size:18px;font-weight:700">3 routes</div>
+          <div class="abs row" style="right:16px;top:17px;gap:7px;height:26px;padding:0 10px;border-radius:9px;background:#132636;border:1px solid #1E3546;font-size:11.5px;font-weight:600">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(74,222,128,.2)"></span>Traffic as of 12:58 PM · just now</div>
+          <div class="rcard" id="rcA" style="top:48px"><div class="stripe" style="background:var(--teal)"></div>
+            <div class="abs disp" style="left:18px;top:10px;font-size:22px;font-weight:700">3 h 38 min</div>
+            <div class="abs t13 mu" style="left:18px;top:39px">184 km · via NH 75</div>
+            <div class="abs" style="left:18px;top:58px"><span class="badge" style="background:rgba(45,212,191,.14);color:var(--teal)"><span data-i="bolt" class="sm"></span>Fastest among available alternatives</span></div>
+            <div class="abs t12 mu" style="right:16px;top:12px;text-align:right">ETA</div>
+            <div class="abs" style="right:16px;top:26px;font-size:17px;font-weight:700">4:36 PM</div>
+            <div class="abs t12" style="right:16px;top:47px;color:var(--amber);font-weight:600">+22 min traffic</div></div>
+          <div class="rcard" id="rcB" style="top:140px"><div class="stripe" style="background:#4B6A82"></div>
+            <div class="abs disp" style="left:18px;top:10px;font-size:22px;font-weight:700">4 h 06 min</div>
+            <div class="abs t13 mu" style="left:18px;top:39px">201 km · via Tumakuru &amp; Tiptur</div>
+            <div class="abs" style="left:18px;top:58px"><span class="badge" style="background:#1B3040;color:#AFC1CF">+28 min vs fastest</span></div>
+            <div class="abs t12 mu" style="right:16px;top:12px;text-align:right">ETA</div>
+            <div class="abs" style="right:16px;top:26px;font-size:17px;font-weight:700">5:04 PM</div>
+            <div class="abs t12" style="right:16px;top:47px;color:var(--amber);font-weight:600">+9 min traffic</div></div>
+          <div class="rcard" id="rcC" style="top:232px"><div class="stripe" style="background:#4B6A82"></div>
+            <div class="abs disp" style="left:18px;top:10px;font-size:22px;font-weight:700">4 h 19 min</div>
+            <div class="abs t13 mu" style="left:18px;top:39px">212 km · via Nagamangala</div>
+            <div class="abs" style="left:18px;top:58px"><span class="badge" style="background:#1B3040;color:#AFC1CF">+41 min vs fastest</span></div>
+            <div class="abs t12 mu" style="right:16px;top:12px;text-align:right">ETA</div>
+            <div class="abs" style="right:16px;top:26px;font-size:17px;font-weight:700">5:17 PM</div>
+            <div class="abs t12" style="right:16px;top:47px;color:var(--mu);font-weight:600">Toll info not provided</div></div>
+          <div class="btn pri" style="left:16px;width:212px;top:332px"><span data-i="fork"></span>Stops along route</div>
+          <div class="btn sec" style="left:236px;right:16px;top:332px"><span data-i="map"></span>Full map</div>
+        </div>
+      </div>
+
+      <!-- STOPS -->
+      <div class="scr" id="sStops">
+        <div class="abs glass row" style="left:16px;right:80px;top:46px;height:52px;padding:0 12px;gap:10px;border-radius:16px">
+          <span data-i="back" style="color:#BFD0DC"></span><div><div class="t13" style="font-weight:700">Stops along NH 75</div><div class="t12 mu" style="font-size:11px">Bengaluru → Hassan · 3 h 38 min</div></div></div>
+        <div class="sheet" style="top:300px">
+          <div class="handle"></div>
+          <div class="abs" style="left:20px;top:20px;font-size:18px;font-weight:700">What do you need?</div>
+          <div class="abs t12 mu" style="left:20px;top:44px">We search only the category you choose, along your route</div>
+          <div class="abs row" style="left:16px;top:66px;gap:8px;white-space:nowrap">
+            <span class="chip" id="chipR"><span data-i="fork"></span>Restaurants</span>
+            <span class="chip"><span data-i="cup"></span>Cafés</span>
+            <span class="chip"><span data-i="fuel"></span>Fuel</span>
+            <span class="chip"><span data-i="bolt"></span>EV charging</span>
+            <span class="chip"><span data-i="wc"></span>Toilets</span>
+            <span class="chip"><span data-i="cross"></span>Hospitals</span></div>
+          <div class="abs card row" id="stopHint" style="left:16px;right:16px;top:124px;height:120px;padding:18px;gap:14px;align-items:flex-start;background:#112230">
+            <div class="icn" style="background:rgba(45,212,191,.12);color:var(--teal)" data-i="route"></div>
+            <div><div class="t15">Stops ranked by real detour</div><div class="t13 mu" style="margin-top:6px;line-height:1.45">We estimate the extra driving time each stop adds to this exact route — not straight-line distance.</div></div></div>
+          <div id="stopRes">
+            <div class="abs row" style="left:20px;right:20px;top:114px;justify-content:space-between"><span class="t12" style="font-weight:700;color:#CFDCE6">Restaurants · by added driving time</span><span class="t12 mu">Detours: top 3</span></div>
+            <div class="shim" id="sh1" style="top:136px"></div><div class="shim" id="sh2" style="top:228px"></div><div class="shim" id="sh3" style="top:320px"></div>
+            <div class="rcard" id="st1" style="top:136px">
+              <div class="abs" style="left:14px;top:14px;width:26px;height:26px;border-radius:9px;background:rgba(45,212,191,.14);color:var(--teal);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">1</div>
+              <div class="abs t15" style="left:52px;top:12px">Highway Thali House</div>
+              <div class="abs t12" style="left:52px;top:34px;color:#CFDCE6"><span style="color:var(--amber)">★</span> 4.3 <span class="mu">(2,140)</span> · <span style="color:var(--green)">Open now</span></div>
+              <div class="abs t12 mu" style="left:52px;top:54px">62 km into your route</div>
+              <div class="abs disp" style="right:14px;top:14px;font-size:21px;font-weight:700;color:var(--teal)">+4 min</div>
+              <div class="abs t12 mu" style="right:14px;top:44px">+1.2 km</div></div>
+            <div class="rcard" id="st2" style="top:228px">
+              <div class="abs" style="left:14px;top:14px;width:26px;height:26px;border-radius:9px;background:rgba(45,212,191,.14);color:var(--teal);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">2</div>
+              <div class="abs t15" style="left:52px;top:12px">Coffee Estate Café</div>
+              <div class="abs t12" style="left:52px;top:34px;color:#CFDCE6"><span style="color:var(--amber)">★</span> 4.5 <span class="mu">(864)</span> · <span style="color:var(--green)">Open now</span></div>
+              <div class="abs t12 mu" style="left:52px;top:54px">79 km into your route</div>
+              <div class="abs disp" style="right:14px;top:14px;font-size:21px;font-weight:700;color:var(--teal)">+6 min</div>
+              <div class="abs t12 mu" style="right:14px;top:44px">+2.4 km</div></div>
+            <div class="rcard" id="st3" style="top:320px">
+              <div class="abs" style="left:14px;top:14px;width:26px;height:26px;border-radius:9px;background:rgba(255,181,71,.14);color:var(--amber);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">3</div>
+              <div class="abs t15" style="left:52px;top:12px">Riverside Darshini</div>
+              <div class="abs t12" style="left:52px;top:34px;color:#CFDCE6"><span style="color:var(--amber)">★</span> 4.6 <span class="mu">(3,410)</span> · <span class="mu">Hours not provided</span></div>
+              <div class="abs t12 row" style="left:52px;top:52px;gap:5px;color:var(--amber);font-weight:600"><span data-i="alert" class="sm"></span>300 m away · access via next exit</div>
+              <div class="abs disp" style="right:14px;top:14px;font-size:21px;font-weight:700;color:var(--amber)">+17 min</div>
+              <div class="abs t12 mu" style="right:14px;top:44px">+6.8 km</div></div>
+          </div>
+          <div class="btn pri" id="cmpBtn" style="left:16px;right:16px;top:448px;height:48px"><span data-i="route"></span>Compare detours</div>
+        </div>
+      </div>
+
+      <!-- DETOUR -->
+      <div class="scr" id="sDetour" style="background:var(--ink)">
+        <div class="abs" style="left:16px;top:58px;color:#BFD0DC" data-i="back"></div>
+        <div class="abs" style="left:52px;top:48px"><div style="font-size:20px;font-weight:700">Detour comparison</div><div class="t12 mu" style="margin-top:2px">Bengaluru → Hassan · traffic as of 12:58 PM</div></div>
+        <div class="abs card" style="left:16px;right:16px;top:112px;height:68px;padding:12px 16px">
+          <div class="row" style="justify-content:space-between"><span class="t13" style="font-weight:600">Direct route</span><span class="t13 mu">3 h 38 min · 184 km</span></div>
+          <div class="row" style="margin-top:12px;gap:0"><div style="height:10px;width:220px;border-radius:5px 0 0 5px;background:#3A5468"></div><svg width="14" height="12" viewBox="0 0 14 12"><path d="M2 0l4 12M8 0l4 12" stroke="#5E7487" stroke-width="2"/></svg></div></div>
+        <div id="dRows"></div>
+        <div class="abs card" style="left:16px;right:16px;top:480px;height:236px;padding:16px">
+          <div class="row" style="gap:10px"><div class="icn" style="width:30px;height:30px;border-radius:10px;background:rgba(45,212,191,.12);color:var(--teal)" data-i="info"></div><span class="t15">How the detour is calculated</span></div>
+          <div class="mono" style="margin-top:14px;font-size:12px;line-height:1.7;background:#0B1822;border:1px solid #1C3242;border-radius:12px;padding:10px 12px;color:#A9F0E4">added time =<br>(origin → stop → destination)<br>&nbsp;&nbsp;− (origin → destination)</div>
+          <div class="t12 mu" style="margin-top:12px;line-height:1.6">• Same departure time and traffic settings<br>• Estimated <b style="color:#CFDCE6">driving</b> time only — time spent at the stop is not included<br>• Re-routed for the top candidates only</div></div>
+        <div class="btn pri" style="left:16px;right:16px;top:736px"><span data-i="plus"></span>Add Highway Thali House</div>
+        <div class="snack" id="snackAdd" style="top:666px"><span data-i="check" style="color:#0F766E"></span>Added to your journey<span style="margin-left:auto;color:#0F766E;font-weight:700">VIEW</span></div>
+      </div>
+
+      <!-- JOURNEY -->
+      <div class="scr" id="sJourney">
+        <div class="abs glass row" style="left:16px;right:80px;top:46px;height:52px;padding:0 12px;gap:10px;border-radius:16px">
+          <span data-i="route" style="color:var(--teal)"></span><div><div class="t13" style="font-weight:700">Your journey</div><div class="t12 mu" style="font-size:11px" id="jSub">Bengaluru → Hassan · 1 stop</div></div></div>
+        <div class="sheet" style="top:330px">
+          <div class="handle"></div>
+          <div class="abs card" style="left:16px;right:16px;top:20px;height:68px;background:#13283A">
+            <div class="abs" style="left:16px;top:11px"><div class="t12 mu">ETA</div><div class="disp" id="jEta" style="font-size:21px;font-weight:700">4:40 PM</div></div>
+            <div class="abs" style="left:122px;top:11px"><div class="t12 mu" id="jDist">185 km</div><div class="disp" id="jDur" style="font-size:21px;font-weight:700">3 h 42 min</div></div>
+            <div class="abs badge" id="jDelta" style="right:14px;top:23px;background:rgba(255,181,71,.14);color:var(--amber);font-size:12.5px;padding:5px 9px">+4 min vs direct</div>
+            <div class="abs row" id="jCalc" style="inset:0;justify-content:center;gap:10px;background:#13283A;border-radius:20px;font-size:13px;font-weight:600;color:#CFDCE6"><div class="spinner lt"></div>Recalculating with traffic…</div>
+          </div>
+          <div class="abs t12 mu" style="left:20px;top:94px">Your order is kept. <span style="color:var(--teal);font-weight:600">Optimise order</span> only if you ask.</div>
+          <div class="abs" id="jLine" style="left:31px;width:2px;top:140px;background:#24394A"></div>
+          <div class="abs row jr" id="jO" style="left:16px;right:16px;height:56px">
+            <div style="width:32px;display:flex;justify-content:center"><div style="width:14px;height:14px;border-radius:50%;border:3px solid var(--blue);background:#0E1C27"></div></div>
+            <div><div class="t15">Current location</div><div class="t12 mu">Bengaluru · 12:58 PM</div></div></div>
+          <div class="abs row jr" id="jT" style="left:16px;right:16px;height:56px">
+            <div style="width:32px;display:flex;justify-content:center"><div class="wp jn" style="transform:none;width:22px;height:22px;font-size:11px">1</div></div>
+            <div style="flex:1"><div class="t15">Highway Thali House</div><div class="t12 mu">Restaurant · +4 min</div></div>
+            <span data-i="up" style="color:#9FB3C3"></span><span data-i="down" style="color:#9FB3C3"></span><span data-i="close" style="color:#6F8597"></span></div>
+          <div class="abs row jr" id="jF" style="left:16px;right:16px;height:56px">
+            <div style="width:32px;display:flex;justify-content:center"><div class="wp jn" style="transform:none;width:22px;height:22px;font-size:11px">2</div></div>
+            <div style="flex:1"><div class="t15">Ridgeway Fuel Point</div><div class="t12 mu">Fuel · +3 min</div></div>
+            <span data-i="up" style="color:#9FB3C3"></span><span data-i="down" style="color:#9FB3C3"></span><span data-i="close" style="color:#6F8597"></span></div>
+          <div class="abs row jr" id="jD" style="left:16px;right:16px;height:56px">
+            <div style="width:32px;display:flex;justify-content:center"><div style="width:14px;height:14px;border-radius:4px;background:var(--amber)"></div></div>
+            <div><div class="t15">Hassan, Karnataka</div><div class="t12 mu" id="jDsub">Arrive 4:40 PM</div></div></div>
+          <div class="abs row jr" id="jA" style="left:16px;height:40px;color:var(--teal);font-weight:650;font-size:14px;gap:12px">
+            <div style="width:32px;display:flex;justify-content:center"><span data-i="plus"></span></div>Add a stop</div>
+          <div class="btn pri" id="saveBtn" style="left:16px;right:16px;top:418px;height:48px"><span data-i="bookmark"></span><span id="saveTx">Save journey</span></div>
+        </div>
+        <div class="abs" id="pickDim" style="inset:0;background:rgba(0,0,0,.45)"></div>
+        <div class="sheet" id="pick" style="top:560px;background:#13222E">
+          <div class="handle"></div>
+          <div class="abs t15" style="left:20px;top:22px">Add from stops along your route</div>
+          <div class="abs row" style="left:16px;right:16px;top:56px;height:56px;border-radius:14px;background:#182C3B;padding:0 12px" id="pick1">
+            <div class="icn" style="background:rgba(45,212,191,.12);color:var(--teal);width:32px;height:32px" data-i="fuel"></div><div style="flex:1"><div class="t15">Ridgeway Fuel Point</div><div class="t12 mu">Fuel · 48 km into route</div></div><span style="font-weight:700;color:var(--teal)">+3 min</span></div>
+          <div class="abs row" style="left:16px;right:16px;top:120px;height:56px;padding:0 12px">
+            <div class="icn" style="background:rgba(45,212,191,.12);color:var(--teal);width:32px;height:32px" data-i="cup"></div><div style="flex:1"><div class="t15">Coffee Estate Café</div><div class="t12 mu">Café · 79 km into route</div></div><span style="font-weight:700;color:var(--teal)">+6 min</span></div>
+        </div>
+      </div>
+
+      <!-- shared SOS pill -->
+      <div class="abs row" id="sos" style="left:316px;top:49px;width:60px;height:30px;border-radius:11px;justify-content:center;gap:5px;background:#E5484D;font-size:12.5px;font-weight:800;letter-spacing:.06em;box-shadow:0 6px 16px rgba(229,72,77,.35)"><span data-i="shield" class="sm"></span>SOS</div>
+
+      <!-- EMERGENCY -->
+      <div class="scr" id="sEmer" style="background:radial-gradient(500px 360px at 50% 0%,#3A1216 0%,#120A0D 60%,#0C0809 100%)">
+        <div id="emerContent" class="abs" style="left:0;right:0;top:0;height:1200px">
+          <div class="abs" style="left:16px;right:16px;top:108px;height:224px;border-radius:24px;background:linear-gradient(150deg,#F0565B,#B4232A);box-shadow:0 20px 50px rgba(229,72,77,.3);overflow:hidden">
+            <div class="abs" style="right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;border:24px solid rgba(255,255,255,.08)"></div>
+            <div class="abs disp" style="left:22px;top:14px;font-size:66px;font-weight:800;letter-spacing:-.02em">112</div>
+            <div class="abs" style="left:24px;top:94px;font-size:16px;font-weight:700">India emergency number</div>
+            <div class="abs t13" style="left:24px;top:116px;opacity:.85">Police · Fire · Ambulance</div>
+            <div class="btn" id="call112" style="left:20px;right:20px;top:148px;height:50px;background:#fff;color:#C4262D;font-size:17px;font-weight:800"><span data-i="phone"></span>Call 112</div>
+            <div class="abs t12" style="left:0;right:0;top:203px;text-align:center;opacity:.88">Opens your dialer — nothing is called automatically</div></div>
+          <div class="abs card" style="left:16px;right:16px;top:346px;height:164px;background:#1A1215;border-color:#2E1E22">
+            <div class="abs row" style="left:16px;top:14px;gap:8px"><span data-i="target" style="color:var(--blue)"></span><span class="t15">Your location</span><span class="badge" style="background:rgba(74,222,128,.12);color:var(--green)">GPS</span></div>
+            <div class="abs mono" style="left:16px;top:46px;font-size:19px;font-weight:600">13.0215° N, 77.0262° E</div>
+            <div class="abs t13 mu" style="left:16px;top:74px">Accuracy ±9 m · 1:02 PM</div>
+            <div class="btn sec" style="left:12px;width:120px;top:102px;height:46px;background:#24181C;border-color:#38262B"><span data-i="copy"></span>Copy</div>
+            <div class="btn" id="shareBtn" style="left:140px;right:12px;top:102px;height:46px;background:#F2F6F9;color:#14212B"><span data-i="share"></span>Share location</div></div>
+          <div class="abs lbl" style="left:20px;top:528px;color:#8C7177">Offline directory</div>
+          <div class="abs row" style="left:16px;right:16px;top:548px;height:48px;border-radius:14px;background:#181013;padding:0 14px">
+            <span class="mono" style="font-weight:700;width:52px">1033</span><span class="t13" style="flex:1">National Highways helpline</span><span data-i="phone" style="color:#FF8A8E"></span></div>
+          <div class="abs row" style="left:16px;right:16px;top:602px;height:48px;border-radius:14px;background:#181013;padding:0 14px">
+            <span class="mono" style="font-weight:700;width:52px">108</span><span class="t13" style="flex:1">Ambulance (state service)</span><span data-i="phone" style="color:#FF8A8E"></span></div>
+          <div class="abs t12" style="left:20px;top:656px;color:#7D6267">Source &amp; last-verified date stored with each entry</div>
+          <div class="abs row" style="left:20px;right:20px;top:690px;justify-content:space-between"><span class="lbl" style="color:#8C7177">Nearby hospitals</span><span class="t12 mu">via Google Places</span></div>
+          <div class="abs row" style="left:16px;right:16px;top:714px;height:52px;border-radius:14px;background:rgba(255,181,71,.10);border:1px solid rgba(255,181,71,.3);padding:0 12px;gap:10px;font-size:12px;color:#FFD596;line-height:1.35"><span data-i="alert"></span>Bed, ICU and ambulance availability is not verified. Call ahead if you can.</div>
+          <div id="hosp"></div>
+        </div>
+        <div class="abs" style="left:0;right:0;top:0;height:100px;background:linear-gradient(#1F0D10 70%,rgba(31,13,16,0))"></div>
+        <div class="abs" style="left:16px;top:58px;color:#E7C9CC" data-i="back"></div>
+        <div class="abs" style="left:52px;top:52px;font-size:22px;font-weight:800">Emergency</div>
+        <div class="abs row" style="right:16px;top:54px;height:28px;padding:0 10px;gap:6px;border-radius:9px;background:rgba(74,222,128,.12);color:var(--green);font-size:12px;font-weight:700"><span data-i="check" class="sm"></span>Works offline</div>
+        <div class="snack" id="snackDial" style="top:766px"><span data-i="phone" style="color:#C4262D"></span>Dialer opened with 112 — you tap call</div>
+        <div class="abs" id="shareDim" style="inset:0;background:rgba(0,0,0,.5)"></div>
+        <div class="sheet" id="shareSheet" style="top:548px;background:#EEF3F7;color:#0E1A22">
+          <div class="handle" style="background:#C2CDD6"></div>
+          <div class="abs" style="left:22px;top:24px;font-size:16px;font-weight:700">Share location</div>
+          <div class="abs mono" style="left:16px;right:16px;top:56px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #D7E0E7;font-size:11px;line-height:1.55;color:#33454F">My location (±9 m, 1:02 PM):<br>https://maps.google.com/?q=13.0215,77.0262</div>
+          <div class="abs row" style="left:20px;right:20px;top:136px;justify-content:space-between" id="shareTargets"></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="scr" id="sSet" style="background:var(--ink)">
+        <div class="abs" style="left:20px;top:52px;font-size:22px;font-weight:800">Settings &amp; privacy</div>
+        <div class="abs card" style="left:16px;right:16px;top:98px;height:224px;padding:16px">
+          <div class="row" style="justify-content:space-between"><span class="t15">API budget · this session</span><span class="t12 mu">configurable</span></div>
+          <div id="bars" style="margin-top:6px"></div></div>
+        <div class="abs card" style="left:16px;right:16px;top:334px;height:146px;padding:14px 16px">
+          <div class="t15">Request optimisation</div>
+          <div class="row t13" style="margin-top:12px;gap:10px"><span data-i="check" style="color:var(--teal)"></span><span style="flex:1">Duplicate requests merged</span><b id="o1">3</b></div>
+          <div class="row t13" style="margin-top:9px;gap:10px"><span data-i="check" style="color:var(--teal)"></span><span style="flex:1">Stale searches cancelled</span><b id="o2">11</b></div>
+          <div class="row t13" style="margin-top:9px;gap:10px"><span data-i="check" style="color:var(--teal)"></span><span style="flex:1">Field masks: only needed fields</span><b style="color:var(--teal)">On</b></div></div>
+        <div class="abs card" style="left:16px;right:16px;top:492px;height:212px;padding:14px 16px">
+          <div class="t15">Privacy</div>
+          <div class="row t13" style="margin-top:14px;justify-content:space-between"><span>Location only while using the app</span><div class="toggle"></div></div>
+          <div class="row t13" style="margin-top:12px;justify-content:space-between"><span>Background tracking</span><span class="mu" style="font-weight:600">Never</span></div>
+          <div class="row t13" style="margin-top:14px;justify-content:space-between"><span>Keep recent journeys on device</span><div class="toggle"></div></div>
+          <div class="row t13" style="margin-top:12px;justify-content:space-between"><span>Usage analytics</span><div class="toggle off"></div></div></div>
+        <div class="abs row" style="left:20px;right:20px;top:720px;justify-content:space-between;font-size:13px;font-weight:600"><span style="color:var(--teal)">Privacy policy</span><span style="color:#FF8A8E">Clear local data</span></div>
+        <div class="nav"><div><span data-i="nav"></span>Plan</div><div><span data-i="bookmark"></span>Journeys</div><div style="color:#FF7B7F"><span data-i="shield"></span>SOS</div><div class="on"><span data-i="gear"></span>Settings</div></div>
+      </div>
+
+      <div id="status"><span id="clock">12:58</span><span class="cam"></span>
+        <span class="row" style="gap:6px"><svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1" fill="#fff"/><rect x="9" y="3" width="3" height="9" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#fff" opacity=".4"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5L.6 3.6a10.5 10.5 0 0 1 14.8 0z" fill="#fff"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="#fff" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="8" rx="2" fill="#fff"/><rect x="23.5" y="4" width="2" height="5" rx="1" fill="#fff" opacity=".5"/></svg></span></div>
+      <div id="gesture"></div>
+      <div id="ripple"></div><div id="cursor"></div>
+    </div>
+  </div>
+
+  <!-- OUTRO -->
+  <div id="outro">
+    <svg class="logo" viewBox="0 0 132 132" id="outroLogo"></svg>
+    <div class="bigwm">FLOWSTATE</div>
+    <div class="tagline">Smarter journeys. Better stops. Help when it matters.</div>
+    <div class="stack">Android <i></i> Kotlin <i></i> Jetpack Compose <i></i> Material 3 <i></i> Google Maps Platform</div>
+    <div class="stack" style="margin-top:14px;font-size:15px">Launch corridors: Bengaluru ↔ Hassan (NH-75) · Bengaluru ↔ Mysuru (NH-275)</div>
+  </div>
+</div>
+
+<script>
+/* ================= icons ================= */
+const ICONS={
+ back:'M15 18l-6-6 6-6', next:'M9 6l6 6-6 6', swap:'M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4',
+ target:'M12 2v3M12 19v3M2 12h3M19 12h3M12 5.5a6.5 6.5 0 1 1 0 13a6.5 6.5 0 0 1 0-13zM12 10a2 2 0 1 1 0 4a2 2 0 0 1 0-4z',
+ clock:'M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18zM12 7.5V12l3 2', car:'M5 16h14M6.5 16v2.5M17.5 16v2.5M4 16v-4l2-5h12l2 5v4M4 12h16M8 14h.01M16 14h.01',
+ down:'M6 9l6 6 6-6', up:'M6 15l6-6 6 6', close:'M6 6l12 12M18 6L6 18', check:'M5 12.5l4.5 4.5L19 7.5', plus:'M12 5v14M5 12h14',
+ pin:'M12 21s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12zM12 6.5a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0-5z',
+ bookmark:'M6 3.5h12v17l-6-4-6 4z', nav:'M3.5 11L20.5 3.5 13 20.5l-2-7.5z',
+ shield:'M12 2.5l8 3v6c0 5-3.4 8.8-8 10.5-4.6-1.7-8-5.5-8-10.5v-6zM12 8v5M12 16v.5',
+ gear:'M12 9a3 3 0 1 1 0 6a3 3 0 0 1 0-6zM12 2.5v3M12 18.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.5 12h3M18.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1',
+ fork:'M7 3v18M4.5 3v5.5a2.5 2.5 0 0 0 5 0V3M17 21V3c-2.2 1-3.5 3.5-3.5 7 0 2 .8 3 3.5 3',
+ cup:'M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3v3M12 3v3',
+ fuel:'M4.5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h13M14.5 9h2a2 2 0 0 1 2 2v5.5a1.5 1.5 0 0 0 3 0V8l-3-3M7.5 7.5h4',
+ bolt:'M13 2.5L4.5 13.5h6.5l-1 8 8.5-11h-6.5z',
+ wc:'M6.5 3.5a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM4.5 9h4v6.5h-1V21h-2v-5.5h-1zM17.5 3.5a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM15.5 9h4l1.5 7h-2v5h-3v-5h-2z',
+ cross:'M9 3.5h6v5.5h5.5v6H15v5.5H9V15H3.5V9H9z',
+ phone:'M5 3.5h3.5l2 5L8 10a12 12 0 0 0 6 6l1.5-2.5 5 2v3.5a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2z',
+ share:'M4 12.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6.5M16 6.5l-4-4-4 4M12 2.5V15',
+ copy:'M9 9h11v11H9zM15 9V4H4v11h5', map:'M3 6l6-2.5 6 2.5 6-2.5v14.5l-6 2.5-6-2.5-6 2.5zM9 3.5V18M15 6v14.5',
+ route:'M6 17a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0-5zM18 2a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0-5zM6 17V9.5a4 4 0 0 1 4-4h5.5M18 7v7.5a4 4 0 0 1-4 4H8.5',
+ alert:'M12 3.5L2.5 20h19zM12 10v4.5M12 17.2v.3', info:'M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18zM12 11v5.5M12 7.8v.3',
+ msg:'M4 5h16v11H9l-5 4z', mail:'M3.5 5.5h17v13h-17zM3.5 6l8.5 7 8.5-7', link:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+ near:'M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8'
+};
+function icon(n,cls=''){return `<svg class="i ${cls}" viewBox="0 0 24 24"><path d="${ICONS[n]}"/></svg>`}
+document.querySelectorAll('[data-i]').forEach(e=>{const sm=e.classList.contains('sm');e.insertAdjacentHTML('afterbegin',icon(e.dataset.i));if(sm){const s=e.querySelector('svg');s.style.width='14px';s.style.height='14px'}});
+
+/* logo mark: a flowing route that ends in a pin */
+const LOGO=`<defs><linearGradient id="lg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#14B8A6"/><stop offset="1" stop-color="#5EEAD4"/></linearGradient>
+<linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC56B"/><stop offset="1" stop-color="#FF9F2E"/></linearGradient></defs>
+<rect x="4" y="4" width="124" height="124" rx="36" fill="#0E2230" stroke="#1E3A4B" stroke-width="2"/>
+<path class="lpath" d="M30 98 C 52 98, 50 66, 68 64 S 92 40, 100 34" fill="none" stroke="url(#lg)" stroke-width="11" stroke-linecap="round"/>
+<circle cx="30" cy="98" r="9" fill="#0E2230" stroke="#5EEAD4" stroke-width="5"/>
+<circle class="ldot" cx="100" cy="34" r="12" fill="url(#lg2)"/>`;
+document.querySelectorAll('.logo,.logoSm').forEach(s=>s.innerHTML=LOGO);
+
+/* ================= helpers ================= */
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eout=x=>1-Math.pow(1-x,3);
+const P=(t,a,b,e=eio)=>e(clamp((t-a)/(b-a)));
+const lerp=(a,b,x)=>a+(b-a)*x;
+function win(t,a,b,fi=.45,fo=.45){if(t<a||t>b)return 0;return eio(Math.min(clamp((t-a)/fi),clamp((b-t)/fo)))}
+function show(el,o,tr){el.style.opacity=o.toFixed(3);el.style.visibility=o<.002?'hidden':'visible';if(tr!==undefined)el.style.transform=tr}
+function txt(el,s){if(el.textContent!==s)el.textContent=s}
+const NS='http://www.w3.org/2000/svg';
+function sv(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||cam).appendChild(e);return e}
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+function smooth(pts){let d=`M${pts[0][0]},${pts[0][1]}`;for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+  d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0]},${p2[1]}`}return d}
+
+/* ================= stylised map (original artwork) ================= */
+const cam=$('cam');
+const BLR=[1000,700], HAS=[200,556];
+sv('rect',{x:-600,y:-400,width:2600,height:2000,fill:'#0B1923'});
+// terrain patches
+for(let i=0;i<26;i++){const x=rnd()*1300-50,y=rnd()*900+150,r=30+rnd()*90;sv('ellipse',{cx:x,cy:y,rx:r,ry:r*(.5+rnd()*.5),fill:rnd()>.5?'#0D1F2A':'#0C1C22',opacity:.9})}
+for(let i=0;i<9;i++){const x=rnd()*1100+50,y=rnd()*700+250;sv('ellipse',{cx:x,cy:y,rx:20+rnd()*40,ry:12+rnd()*24,fill:'#0E2620',opacity:.8})}
+// rivers
+sv('path',{d:smooth([[120,330],[180,420],[232,500],[262,600],[318,700],[400,800],[470,900],[560,980],[690,1030]]),fill:'none',stroke:'#0F2B3B','stroke-width':6,'stroke-linecap':'round',class:'riv'});
+sv('path',{d:smooth([[690,1030],[780,1000],[860,960],[960,960],[1080,1000]]),fill:'none',stroke:'#0F2B3B','stroke-width':5,'stroke-linecap':'round',class:'riv'});
+// city blobs
+const city=(x,y,r,f)=>sv('circle',{cx:x,cy:y,r,fill:f||'#102331'});
+city(1005,700,118,'#0F2230');city(1000,700,80,'#12283A');
+[[905,664,16],[720,690,15],[830,560,24],[580,440,16],[410,606,16],[610,800,13],[760,880,20],[200,556,30],[640,1010,34]].forEach(c=>city(...c));
+// lakes
+[[1032,668,11,6],[978,734,9,5],[1052,724,7,5],[962,676,6,4],[1015,760,8,4],[960,640,7,4]].forEach(l=>sv('ellipse',{cx:l[0],cy:l[1],rx:l[2],ry:l[3],fill:'#123246'}));
+// city street grid (clipped)
+const defs=sv('defs',{});const cp=sv('clipPath',{id:'cc'},defs);sv('circle',{cx:1003,cy:700,r:112},cp);
+const g=sv('g',{'clip-path':'url(#cc)'});
+for(let k=-130;k<=130;k+=9){sv('line',{x1:1003-140,y1:700+k,x2:1003+140,y2:700+k+18,class:'st'},g);sv('line',{x1:1003+k,y1:700-140,x2:1003+k-14,y2:700+140,class:'st'},g)}
+sv('circle',{cx:1003,cy:700,r:62,fill:'none',class:'rd2'});sv('circle',{cx:1003,cy:700,r:96,fill:'none',class:'rd1'});
+// regional minor roads
+const nodes=[[905,664],[720,690],[830,560],[580,440],[410,606],[610,800],[760,880],[200,556],[640,1010],[480,700],[300,400],[900,420],[1050,500],[1100,880],[350,850],[520,560],[700,560],[260,700],[150,450],[980,1000],[820,760],[460,350],[1150,650],[880,880]];
+for(let i=0;i<34;i++){const a=nodes[Math.floor(rnd()*nodes.length)],b=nodes[Math.floor(rnd()*nodes.length)];if(a===b)continue;const mx=(a[0]+b[0])/2+(rnd()-.5)*80,my=(a[1]+b[1])/2+(rnd()-.5)*80;sv('path',{d:`M${a[0]},${a[1]} Q${mx},${my} ${b[0]},${b[1]}`,fill:'none',class:'rd1'})}
+// other highways for context (incl. NH-275 to Mysuru)
+sv('path',{d:smooth([[1000,700],[930,790],[850,860],[760,880],[700,950],[640,1010]]),fill:'none',class:'rd2'});
+sv('path',{d:smooth([[1000,700],[1060,600],[1110,500],[1160,400]]),fill:'none',class:'rd2'});
+sv('path',{d:smooth([[1000,700],[1080,760],[1160,800],[1240,840]]),fill:'none',class:'rd2'});
+sv('path',{d:smooth([[200,556],[150,460],[110,380]]),fill:'none',class:'rd2'});
+
+/* routes */
+const R={
+ A:[[1000,700],[960,690],[905,664],[850,668],[780,682],[720,690],[665,672],[610,660],[540,640],[470,622],[410,606],[340,590],[280,572],[232,560],[200,556]],
+ B:[[1000,700],[960,690],[905,664],[870,612],[830,560],[790,522],[730,484],[660,456],[580,440],[500,450],[430,470],[360,500],[300,528],[240,548],[200,556]],
+ C:[[1000,700],[968,742],[918,772],[850,792],[770,804],[690,812],[610,800],[545,770],[492,728],[442,680],[400,640],[350,606],[290,580],[236,563],[200,556]]
+};
+const TRAFFIC={A:[[0,.05,'#FFB547'],[.05,.085,'#FF5A5F'],[.085,.11,'#FFB547'],[.47,.52,'#FFB547'],[.52,.54,'#FF5A5F'],[.94,1,'#FFB547']],
+               B:[[0,.05,'#FFB547'],[.3,.36,'#FFB547'],[.72,.75,'#FF5A5F']]};
+const altG=sv('g',{}),selG=sv('g',{});
+const routes={};
+for(const k of ['B','C','A']){
+  const d=smooth(R[k]);
+  const alt=sv('path',{d,fill:'none',stroke:'#3E5C73',class:'w4','stroke-linecap':'round','stroke-linejoin':'round'},altG);
+  const cas=sv('path',{d,fill:'none',stroke:'#05252A',class:'w10','stroke-linecap':'round','stroke-linejoin':'round'},selG);
+  const sel=sv('path',{d,fill:'none',stroke:'#2DD4BF',class:'w6','stroke-linecap':'round','stroke-linejoin':'round'},selG);
+  const L=sel.getTotalLength();
+  const tg=sv('g',{},selG);
+  (TRAFFIC[k]||[]).forEach(([s,e,c])=>sv('path',{d,fill:'none',stroke:c,class:'w6','stroke-linecap':'butt','stroke-dasharray':`${(e-s)*L} ${L*2}`,'stroke-dashoffset':-s*L},tg));
+  routes[k]={alt,cas,sel,tg,L,d};
+}
+const ptA=f=>{const p=routes.A.sel.getPointAtLength(f*routes.A.L);return [p.x,p.y]};
+const ptOf=(k,f)=>{const p=routes[k].sel.getPointAtLength(f*routes[k].L);return [p.x,p.y]};
+function normalA(f){const a=ptA(f-.003),b=ptA(f+.003);const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);return [-dy/l,dx/l]}
+// riverside stop: close to highway, but reachable only via the next exit
+const RIV_F=.6, n=normalA(RIV_F), rp=ptA(RIV_F), RIV=[rp[0]+n[0]*9,rp[1]+n[1]*9];
+const loopPts=[];for(let f=.598;f<=.675;f+=.011)loopPts.push(ptA(f).map(v=>+v.toFixed(1)));
+const ex=ptA(.675),nx=normalA(.675);loopPts.push([ex[0]+nx[0]*10,ex[1]+nx[1]*10]);
+const mid=ptA(.64),nm=normalA(.64);loopPts.push([mid[0]+nm[0]*15,mid[1]+nm[1]*15]);loopPts.push(RIV);
+const loop=sv('path',{d:smooth(loopPts),fill:'none',stroke:'#FFB547',class:'w3','stroke-linecap':'round','stroke-dasharray':'1 1'});
+const loopL=loop.getTotalLength();
+
+/* overlay markers */
+const ov=$('mapOv');const OV=[];
+function mk(html,cls,w,vis){const e=document.createElement('div');e.innerHTML=`<div class="${cls}">${html}</div>`;ov.appendChild(e);const o={e,w,vis};OV.push(o);return o}
+const pulse=mk('<div style="position:relative;width:20px;height:20px;transform:translate(-50%,-50%)"><div class="pr" style="position:absolute;inset:-14px;border-radius:50%;background:rgba(76,195,255,.25)"></div><div style="position:absolute;inset:0;border-radius:50%;background:#4CC3FF;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>','',BLR,t=>win(t,5,15.2,.3,.6));
+mk('<div style="width:16px;height:16px;border-radius:50%;background:#0B1923;border:4px solid #4CC3FF;transform:translate(-50%,-50%)"></div>','',BLR,t=>win(t,14.6,55.4,.5,.3));
+mk('<div style="transform:translate(-50%,-100%)"><svg width="28" height="36" viewBox="0 0 28 36"><path d="M14 35s12-11.5 12-21A12 12 0 0 0 2 14c0 9.5 12 21 12 21z" fill="#FFB547" stroke="#0B1923" stroke-width="2"/><rect x="9" y="9" width="10" height="10" rx="2.5" fill="#0B1923"/></svg></div>','',HAS,t=>win(t,15.4,55.4,.5,.3));
+const TOWNS=[['Bengaluru',[1000,700],1,[0,26]],['Hassan',[200,556],1,[0,22]],['Nelamangala',[905,664],0,[0,-14]],['Kunigal',[720,690],0,[0,16]],['Tumakuru',[830,560],0,[0,-16]],['Tiptur',[580,440],0,[0,-14]],['Channarayapatna',[410,606],0,[0,18]],['Nagamangala',[610,800],0,[0,16]],['Mandya',[760,880],0,[0,16]],['Mysuru',[640,1010],0,[0,18]]];
+TOWNS.forEach(([nm,p,big,off])=>mk(nm,'town'+(big?' big':''),[p[0],p[1],off],t=>nm==='Bengaluru'?win(t,5,55.4,.4,.3)*(t<14?1:1):win(t,15,55.4,.6,.3)));
+const bub={};
+[['A','3h 38m',.5],['B','4h 06m',.56],['C','4h 19m',.5]].forEach(([k,s,f])=>{bub[k]=mk(s,'bubble',()=>ptOf(k,f),t=>win(t,16.4,25.8,.5,.4))});
+function pinSvg(c,ic){return `<svg width="30" height="38" viewBox="0 0 30 38"><path d="M15 37s13-12 13-22A13 13 0 0 0 2 15c0 10 13 22 13 22z" fill="${c}" stroke="#0B1923" stroke-width="2"/></svg><div style="position:absolute;left:0;top:5px;width:30px;display:flex;justify-content:center;color:#0B1923">${icon(ic).replace('class="i ','style="width:15px;height:15px;stroke-width:2.6" class="i ')}</div>`}
+const pins=[[.34,'#2DD4BF',29.3],[.43,'#2DD4BF',29.5],[null,'#FFB547',29.7]].map(([f,c,t0],i)=>mk(`<div style="position:relative;transform:translate(-50%,-100%)">${pinSvg(c,'fork')}</div>`,'',f===null?RIV:ptA(f),t=>win(t,t0,36.7,.35,.3)));
+const call1=mk('300 m from highway','callout',[RIV[0],RIV[1],[0,-34]],t=>win(t,32.3,35.3,.4,.4));
+const call2=mk('Access via next exit · +17 min','callout',()=>{const p=ptA(.675);return [p[0],p[1],[-6,52]]},t=>win(t,32.9,35.3,.4,.4));
+const wpT=mk('<span class="n">1</span>','wp',ptA(.34),t=>win(t,45,55.4,.4,.3));
+const wpF=mk('<span class="n">2</span>','wp',ptA(.24),t=>win(t,47.9,55.4,.4,.3));
+
+/* camera */
+const CAMS={home:{c:BLR,s:3.1,v:[195,350]},routes:{c:[600,620],s:.39,v:[195,262]},stops:{c:[600,630],s:.39,v:[195,212]},
+  riv:{c:ptA(.635),s:1.9,v:[195,200]},journey:{c:[600,625],s:.39,v:[195,236]}};
+const CAMK=[[0,'home'],[14.2,'home'],[15.9,'routes'],[25.6,'routes'],[26.4,'stops'],[31.2,'stops'],[32.3,'riv'],[34.6,'riv'],[35.6,'stops'],[44.6,'stops'],[45,'journey']];
+function camAt(t){let i=0;while(i<CAMK.length-1&&t>=CAMK[i+1][0])i++;const a=CAMS[CAMK[i][1]];if(i===CAMK.length-1)return a;
+  const b=CAMS[CAMK[i+1][1]],x=eio(clamp((t-CAMK[i][0])/(CAMK[i+1][0]-CAMK[i][0])));
+  const s=Math.exp(lerp(Math.log(a.s),Math.log(b.s),x));
+  // keep zoom transitions pleasant: interpolate the screen position of centres
+  return {c:[lerp(a.c[0],b.c[0],x),lerp(a.c[1],b.c[1],x)],s,v:[lerp(a.v[0],b.v[0],x),lerp(a.v[1],b.v[1],x)]}}
+const style=document.createElement('style');document.head.appendChild(style);
+
+/* ================= dynamic UI content ================= */
+const SUGS=[['Hassan','Karnataka, India'],['Hassan Railway Station','Hassan, Karnataka'],['Hassan Bus Stand','BM Road, Hassan, Karnataka'],['Hassan Road','Arsikere, Karnataka']];
+$('sugs').innerHTML=SUGS.map((s,i)=>`<div class="abs row sug" style="left:16px;right:16px;top:${252+i*64}px;height:60px"><div class="icn" style="background:#15293A;color:#9FB3C3">${icon('pin')}</div><div><div class="t15" style="font-weight:500"><b style="font-weight:700;color:#fff">Hass</b>${s[0].slice(4)}</div><div class="t12 mu">${s[1]}</div></div></div>`).join('');
+const DROWS=[['Highway Thali House','Restaurant · ★ 4.3',4,'3 h 42 min','#2DD4BF'],['Coffee Estate Café','Café · ★ 4.5',6,'3 h 44 min','#2DD4BF'],['Riverside Darshini','Restaurant · 300 m from highway',17,'3 h 55 min','#FFB547']];
+$('dRows').innerHTML=DROWS.map((r,i)=>`<div class="abs card" style="left:16px;right:16px;top:${192+i*94}px;height:84px;padding:12px 16px">
+ <div class="row" style="justify-content:space-between"><div><div class="t15">${r[0]}</div><div class="t12 mu">${r[1]}</div></div><div style="text-align:right"><div class="disp" style="font-size:19px;font-weight:700;color:${r[4]}">+${r[2]} min</div><div class="t12 mu">${r[3]}</div></div></div>
+ <div class="row" style="margin-top:10px;gap:0"><div style="height:10px;width:220px;border-radius:5px 0 0 5px;background:#2C4253"></div><svg width="14" height="12" viewBox="0 0 14 12"><path d="M2 0l4 12M8 0l4 12" stroke="#5E7487" stroke-width="2"/></svg><div class="dbar" data-w="${r[2]*6.4}" style="height:10px;border-radius:0 5px 5px 0;background:${r[4]};width:0"></div></div></div>`).join('');
+const HOSP=[['Sanjeevini Multispeciality Hospital','4.2 km · ~9 min drive · Open 24 hours'],['Hemavathi Care Hospital','7.8 km · ~14 min drive · Open 24 hours'],['Shreya Clinic & Nursing Home','9.1 km · ~16 min drive · Hours not provided']];
+$('hosp').innerHTML=HOSP.map((h,i)=>`<div class="abs card" style="left:16px;right:16px;top:${776+i*92}px;height:84px;padding:12px 14px;background:#1A1215;border-color:#2E1E22">
+ <div class="row" style="gap:10px"><div class="icn" style="width:32px;height:32px;background:rgba(255,90,95,.14);color:#FF7B7F">${icon('cross')}</div><div style="flex:1;min-width:0"><div class="t15" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h[0]}</div><div class="t12 mu">${h[1]}</div></div></div>
+ <div class="row" style="margin:8px 0 0 42px;gap:8px"><span class="badge" style="background:#26191D;color:#F2D3D6;padding:4px 9px">${icon('phone').replace('class="i','style="width:12px;height:12px" class="i')}Call</span><span class="badge" style="background:#26191D;color:#F2D3D6;padding:4px 9px">${icon('nav').replace('class="i','style="width:12px;height:12px" class="i')}Directions</span></div></div>`).join('');
+$('shareTargets').innerHTML=[['msg','Messages'],['mail','Email'],['link','Copy link'],['near','Nearby']].map(([i,l])=>`<div style="display:flex;flex-direction:column;align-items:center;gap:7px;width:70px;font-size:12px;font-weight:600;color:#33454F"><div style="width:52px;height:52px;border-radius:18px;background:#fff;border:1px solid #D7E0E7;display:flex;align-items:center;justify-content:center;color:#1C6E66">${icon(i)}</div>${l}</div>`).join('');
+const BARS=[['Route calculations',6,40],['Place searches',4,30],['Detailed detours',3,12],['Autocomplete sessions',2,20]];
+$('bars').innerHTML=BARS.map(b=>`<div style="margin-top:14px"><div class="row t13" style="justify-content:space-between"><span>${b[0]}</span><span class="mu"><b style="color:#fff">${b[1]}</b> / ${b[2]}</span></div><div style="height:6px;border-radius:3px;background:#1B3040;margin-top:7px;overflow:hidden"><i class="bf" data-w="${b[1]/b[2]}" style="display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#14B8A6,#5EEAD4)"></i></div></div>`).join('');
+const CH=[['Journey search',5,14.2],['Traffic',14.2,25.6],['Smart stops',25.6,36.5],['Detours',36.5,45],['Multi-stop',45,54.8],['Emergency',54.8,66],['Cost & privacy',66,73.2]];
+$('chapters').innerHTML=CH.map(c=>`<div class="ch"><div class="bar"><i></i></div><div class="lb">${c[0]}</div></div>`).join('');
+
+/* ================= touch cursor ================= */
+// [time, x, y, alpha] in phone-screen coordinates
+const CK=[[0,300,600,0],[6.3,300,600,0],[6.6,290,560,1],[7.05,170,180,1],[7.7,170,180,1],[8.2,270,420,1],[9.9,270,420,1],[10.5,170,284,1],[10.9,170,284,1],[11.6,180,520,1],
+ [12.3,195,738,1],[12.9,195,738,1],[13.6,300,600,1],[19.3,300,600,1],[20.0,195,562,1],[20.5,195,562,1],[22.3,260,520,1],[22.9,195,470,1],[23.4,195,470,1],[24.3,180,600,1],[25.0,124,738,1],[25.5,124,738,1],
+ [26.6,200,560,1],[27.6,75,384,1],[28.2,75,384,1],[29.0,320,520,1],[35.0,320,560,1],[35.8,195,772,1],[36.3,195,772,1],[37.2,320,620,1],
+ [41.9,320,620,1],[42.7,195,762,1],[43.3,195,762,1],[44.2,300,560,1],[45.8,300,560,1],[46.4,110,644,1],[46.9,110,644,1],[47.2,180,640,1],[47.7,180,640,1],[48.6,250,520,1],
+ [49.6,250,520,1],[50.2,293,590,1],[50.7,293,590,1],[51.9,250,640,1],[52.6,195,772,1],[53.2,195,772,1],[53.8,300,300,1],[54.3,346,64,1],[54.8,346,64,1],[55.6,300,420,1],
+ [56.4,300,420,1],[57.1,195,280,1],[57.7,195,280,1],[58.8,300,400,1],[59.6,300,400,1],[60.2,259,470,1],[60.7,259,470,1],[61.5,200,260,1],[62.0,200,260,1],[62.4,195,650,1],[63.4,195,330,1],[63.9,280,420,1],[65.4,280,420,1],[65.9,280,420,0]];
+const TAPS=[7.2,10.7,12.5,20.2,23.1,25.2,27.9,36.1,42.9,46.6,47.5,50.4,53.0,54.5,57.4,60.4,61.8];
+const DRAG=[62.4,63.4];
+function cursorAt(t){let i=0;while(i<CK.length-1&&t>=CK[i+1][0])i++;const a=CK[i];if(i===CK.length-1)return a.slice(1);const b=CK[i+1],x=eio(clamp((t-a[0])/(b[0]-a[0])));return [lerp(a[1],b[1],x),lerp(a[2],b[2],x),lerp(a[3],b[3],x)]}
+
+/* ================= frame renderer ================= */
+const E={};['intro','outro','brand','disclaimer','chapters','phone','sHome','sAuto','sRoutes','sStops','sDetour','sJourney','sEmer','sSet','sos','map','mapOv','typed','caret','homeDest','homeBtn','homeBtnTx','rcA','rcB','rcC','chipR','stopHint','stopRes','st1','st2','st3','sh1','sh2','sh3','cmpBtn','snackAdd','jO','jT','jF','jD','jA','jLine','jCalc','jEta','jDur','jDist','jDelta','jSub','jDsub','pick','pickDim','saveBtn','saveTx','emerContent','snackDial','shareDim','shareSheet','call112','cursor','ripple','clock','cap3x','introLogo','introWm','introTag','glowR','routeSheet','pbg'].forEach(k=>E[k]=$(k));
+const caps=[1,2,3,4,5,6,7].map(i=>$('cap'+i));
+const chEls=[...document.querySelectorAll('#chapters .ch')];
+const sugEls=[...document.querySelectorAll('.sug')];
+const dbars=[...document.querySelectorAll('.dbar')];
+const bfs=[...document.querySelectorAll('.bf')];
+const jn=[...document.querySelectorAll('#sJourney .jn')];
+
+function render(t){
+  /* intro & outro */
+  const io=1-P(t,3.7,4.5);
+  show(E.intro,io);
+  E.introLogo.style.transform=`scale(${lerp(.6,1,P(t,.2,1.2,eout))})`;E.introLogo.style.opacity=P(t,.2,.9);
+  const lp=E.introLogo.querySelector('.lpath');lp.style.strokeDasharray=120;lp.style.strokeDashoffset=120*(1-P(t,.5,1.6));
+  E.introWm.style.opacity=P(t,.9,1.6);E.introWm.style.letterSpacing=lerp(.34,.2,P(t,.9,2.2,eout))+'em';
+  E.introTag.style.opacity=P(t,1.6,2.3);E.introTag.style.transform=`translateY(${lerp(14,0,P(t,1.6,2.4,eout))}px)`;
+  const oo=P(t,73.8,75);
+  show(E.outro,oo,`translateY(${lerp(20,0,oo)}px)`);
+  const chrome=win(t,4.2,80.5,.6,.1)*(1-P(t,73.2,73.9));
+  show(E.brand,chrome);show(E.chapters,chrome);show(E.disclaimer,win(t,4.2,81,.6,.1));
+  show(E.phone,win(t,4.0,73.8,1.0,.7),`translateY(${lerp(50,0,P(t,4.0,5.1,eout))}px)`);
+  /* captions */
+  CH.forEach(([n,a,b],i)=>{const o=win(t,a+.15,b,.6,.45);show(caps[i],o,`translateY(${lerp(18,0,P(t,a+.15,a+.85,eout))}px)`);
+    const on=t>=a&&t<b;chEls[i].classList.toggle('on',on);chEls[i].querySelector('i').style.width=(clamp((t-a)/(b-a))*100)+'%'});
+  show(E.cap3x,P(t,31.6,32.3),`translateX(${lerp(-10,0,P(t,31.6,32.4,eout))}px)`);
+  E.glowR.style.background=t>54.8&&t<66?'rgba(255,90,95,.07)':'rgba(255,181,71,.05)';
+
+  /* status bar clock */
+  txt(E.clock,t>54.8?'1:02':'12:58');
+
+  /* camera + map */
+  const c=camAt(t);
+  cam.setAttribute('transform',`translate(${c.v[0]},${c.v[1]}) scale(${c.s}) translate(${-c.c[0]},${-c.c[1]})`);
+  const inv=1/c.s;
+  style.textContent=`.st{stroke:#14293A;stroke-width:${.9*inv}px}.rd1{stroke:#152B3B;stroke-width:${1.3*inv}px}.rd2{stroke:#22425A;stroke-width:${2.4*inv}px}.riv{stroke-width:${4*inv}px}
+   .w3{stroke-width:${3*inv}px}.w4{stroke-width:${4.5*inv}px}.w6{stroke-width:${6*inv}px}.w10{stroke-width:${10*inv}px}`;
+  const mapO=win(t,4.9,55.6,.2,.3);show(E.map,mapO);show(E.mapOv,mapO);
+  // routes
+  const selB=P(t,20.3,20.8)-P(t,23.2,23.7), selA=1-selB;
+  const altsO=1-P(t,25.6,26.2);
+  const draw={A:P(t,15.0,16.8),B:P(t,14.6,16.2),C:P(t,14.8,16.4)};
+  for(const k of ['A','B','C']){
+    const r=routes[k],dp=draw[k];
+    const sa=k==='A'?selA:k==='B'?selB:0;
+    const dash=`${r.L} ${r.L}`,off=r.L*(1-dp);
+    [r.alt,r.cas,r.sel].forEach(p=>{p.setAttribute('stroke-dasharray',dash);p.setAttribute('stroke-dashoffset',off)});
+    const keep=k==='A'?1:altsO;
+    r.alt.setAttribute('opacity',(1-sa)*keep*(dp>0?1:0));
+    r.cas.setAttribute('opacity',sa*.9*(dp>0?1:0));
+    r.sel.setAttribute('opacity',sa*(dp>0?1:0));
+    r.tg.setAttribute('opacity',sa*P(t,16.6,17.3));
+  }
+  // riverside loop
+  const lp2=P(t,32.4,33.8);loop.setAttribute('stroke-dasharray',`${loopL*lp2} ${loopL}`);loop.setAttribute('opacity',win(t,32.3,35.4,.2,.4));
+  // overlays
+  for(const o of OV){const op=o.vis(t);if(op<.002){o.e.style.visibility='hidden';continue}
+    let w=typeof o.w==='function'?o.w():o.w;const off=w[2]||[0,0];
+    const x=(w[0]-c.c[0])*c.s+c.v[0]+off[0],y=(w[1]-c.c[1])*c.s+c.v[1]+off[1];
+    o.e.style.visibility='visible';o.e.style.opacity=op.toFixed(3);o.e.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`}
+  const pr=pulse.e.querySelector('.pr');const ph=(t%1.8)/1.8;pr.style.transform=`scale(${.4+ph})`;pr.style.opacity=1-ph;
+  bub.A.e.firstChild.classList.toggle('sel',selA>.5);bub.B.e.firstChild.classList.toggle('sel',selB>.5);
+  const swapped=t>=50.8;wpT.e.querySelector('.n').textContent=swapped?'2':'1';wpF.e.querySelector('.n').textContent=swapped?'1':'2';
+
+  /* HOME */
+  show(E.sHome,win(t,4.9,14.3,.2,.5));
+  const destSet=t>=11.2;
+  txt(E.homeDest,destSet?'Hassan, Karnataka':'Where to?');E.homeDest.style.color=destSet?'#EAF2F7':'';E.homeDest.style.fontWeight=destSet?'600':'400';
+  E.homeBtn.className='btn '+(destSet?'pri':'dis');
+  const loading=t>=12.6;
+  E.homeBtnTx.innerHTML=loading?'<span class="row" style="gap:10px"><span class="spinner" style="transform:rotate('+(t*400%360)+'deg)"></span>Calculating traffic-aware routes…</span>':'Compare routes';
+  /* AUTOCOMPLETE */
+  show(E.sAuto,win(t,7.3,11.3,.35,.35),`translateY(${lerp(30,0,P(t,7.3,7.75,eout))}px)`);
+  const nch=clamp(Math.floor((t-7.85)/.17)+1,0,6);txt(E.typed,'Hassan'.slice(0,t<7.85?0:nch));
+  E.caret.style.opacity=(Math.floor(t*2.2)%2===0||(t>7.85&&t<9))?1:0;
+  sugEls.forEach((s,i)=>show(s,P(t,8.55+i*.08,8.85+i*.08),`translateY(${lerp(8,0,P(t,8.55+i*.08,8.9+i*.08))}px)`));
+  show(E.pbg,P(t,8.6,9));
+  sugEls[0].style.background=win(t,10.65,11.3,.05,.2)>0?'rgba(45,212,191,.10)':'';sugEls[0].style.borderRadius='14px';
+  /* ROUTES */
+  show(E.sRoutes,win(t,14.2,26.0,.5,.4));
+  E.routeSheet.style.transform=`translateY(${lerp(470,0,P(t,15.2,16.1,eout))}px)`;
+  [['rcA',selA],['rcB',selB],['rcC',0]].forEach(([id,s])=>{const e=E[id];e.style.borderColor=s>.5?'rgba(45,212,191,.7)':'#1E3343';e.style.background=s>.5?'#11302F':'#13232F';
+    e.querySelector('.stripe').style.background=s>.5?'#2DD4BF':'#4B6A82'});
+  /* STOPS */
+  show(E.sStops,win(t,25.7,36.8,.5,.35));
+  const chipOn=t>=27.95;E.chipR.classList.toggle('on',chipOn);
+  show(E.stopHint,1-P(t,27.95,28.2));
+  show(E.stopRes,P(t,28.0,28.3));
+  const shimO=win(t,28.0,29.4,.2,.2);const sp=((t*1.2)%1)*100;
+  [E.sh1,E.sh2,E.sh3].forEach(s=>{show(s,shimO);s.style.backgroundPosition=`${100-sp*1.5}% 0`});
+  [E.st1,E.st2,E.st3].forEach((s,i)=>show(s,P(t,29.3+i*.2,29.7+i*.2),`translateY(${lerp(14,0,P(t,29.3+i*.2,29.8+i*.2,eout))}px)`));
+  const hl=win(t,31.6,35.4,.4,.4);E.st3.style.borderColor=`rgba(255,181,71,${(.15+hl*.65).toFixed(2)})`;E.st3.style.boxShadow=`0 0 0 ${hl*3}px rgba(255,181,71,.15)`;
+  show(E.cmpBtn,P(t,30,30.5));
+  /* DETOUR */
+  show(E.sDetour,win(t,36.4,45.2,.45,.4),`translateX(${lerp(60,0,P(t,36.4,37,eout))}px)`);
+  dbars.forEach((b,i)=>b.style.width=(+b.dataset.w*P(t,37.4+i*.35,38.4+i*.35,eout))+'px');
+  show(E.snackAdd,win(t,43.05,44.9,.3,.3),`translateY(${lerp(20,0,P(t,43.05,43.4,eout))}px)`);
+  /* JOURNEY */
+  show(E.sJourney,win(t,44.9,55.3,.5,.4));
+  const ins=P(t,47.85,48.3,eout), sw=P(t,50.45,51.05);
+  const yO=440,yT=lerp(500,560,sw),yF=lerp(560,500,sw),yD=lerp(560,620,ins),yA=lerp(620,680,ins);
+  const SH=330;E.jO.style.top=(yO-SH)+'px';E.jT.style.top=(yT-SH)+'px';E.jF.style.top=(yF-SH)+'px';E.jD.style.top=(yD-SH)+'px';E.jA.style.top=(yA-SH)+'px';
+  show(E.jF,ins,`translateX(${lerp(40,0,ins)}px)`);
+  E.jLine.style.top=(468-SH)+'px';E.jLine.style.height=(yD-440)+'px';
+  jn[0].textContent=swapped?'2':'1';jn[1].textContent=swapped?'1':'2';
+  E.jF.style.background=win(t,50.3,51.6,.1,.4)>0?'rgba(45,212,191,.08)':'';E.jF.style.borderRadius='14px';
+  txt(E.jSub,t>=47.9?'Bengaluru → Hassan · 2 stops':'Bengaluru → Hassan · 1 stop');
+  let J=['4:40 PM','3 h 42 min','185 km','+4 min vs direct','Arrive 4:40 PM'];
+  if(t>=48.8)J=['4:49 PM','3 h 51 min','190 km','+13 min vs direct','Arrive 4:49 PM'];
+  if(t>=51.9)J=['4:44 PM','3 h 46 min','187 km','+8 min · 5 min saved','Arrive 4:44 PM'];
+  txt(E.jEta,J[0]);txt(E.jDur,J[1]);txt(E.jDist,J[2]);txt(E.jDelta,J[3]);txt(E.jDsub,J[4]);
+  E.jDelta.style.background=t>=51.9?'rgba(74,222,128,.14)':'rgba(255,181,71,.14)';E.jDelta.style.color=t>=51.9?'#4ADE80':'#FFB547';
+  show(E.jCalc,Math.max(win(t,47.9,48.85,.1,.2),win(t,51.05,51.95,.1,.2)));
+  const spn=E.jCalc.querySelector('.spinner');spn.style.transform=`rotate(${t*400%360}deg)`;
+  show(E.pick,win(t,46.7,47.75,.3,.25),`translateY(${lerp(200,0,P(t,46.7,47.05,eout))}px)`);show(E.pickDim,win(t,46.7,47.75,.3,.25));
+  $('pick1').style.background=t>=47.45?'rgba(45,212,191,.16)':'#182C3B';
+  const saved=t>=53.05;txt(E.saveTx,saved?'Saved to Journeys':'Save journey');E.saveBtn.style.background=saved?'#163A36':'';E.saveBtn.style.color=saved?'#5EEAD4':'';E.saveBtn.style.boxShadow=saved?'none':'';
+  show(E.sos,win(t,4.9,55.2,.2,.4)*(1-win(t,7.3,11.3,.3,.3))*(1-win(t,36.4,45.1,.4,.4)),`scale(${1+win(t,54.4,54.8,.1,.2)*.08})`);
+  /* EMERGENCY */
+  show(E.sEmer,win(t,54.7,66.3,.3,.45),`translateY(${lerp(80,0,P(t,54.7,55.3,eout))}px)`);
+  E.call112.style.transform=`scale(${1-win(t,57.35,57.6,.08,.15)*.04})`;
+  show(E.snackDial,win(t,57.65,59.7,.3,.3),`translateY(${lerp(20,0,P(t,57.65,58,eout))}px)`);
+  show(E.shareDim,win(t,60.5,62.1,.3,.3));show(E.shareSheet,win(t,60.5,62.1,.3,.3),`translateY(${lerp(300,0,P(t,60.5,60.9,eout))-lerp(0,-300,P(t,61.8,62.15))}px)`);
+  E.emerContent.style.transform=`translateY(${-330*P(t,62.4,63.4)}px)`;
+  /* SETTINGS */
+  show(E.sSet,win(t,66.0,73.4,.5,.3),`translateY(${lerp(30,0,P(t,66,66.6,eout))}px)`);
+  bfs.forEach((b,i)=>b.style.width=(+b.dataset.w*100*P(t,66.8+i*.2,68+i*.2,eout))+'%');
+
+  /* cursor */
+  const [cx,cy,ca]=cursorAt(t);
+  let press=0,rip=-1;for(const tp of TAPS){press=Math.max(press,win(t,tp-.12,tp+.18,.1,.15));if(t>=tp&&t<tp+.55)rip=(t-tp)/.55}
+  if(t>=DRAG[0]&&t<=DRAG[1])press=1;
+  E.cursor.style.transform=`translate(${cx}px,${cy}px) scale(${1-press*.22})`;E.cursor.style.opacity=ca*(t>4.9&&t<73?1:0);
+  if(rip>=0){E.ripple.style.opacity=(1-rip)*ca;E.ripple.style.transform=`translate(${cx}px,${cy}px) scale(${1+rip*1.6})`}else E.ripple.style.opacity=0;
+}
+window.renderAt=render;
+window.DURATION=80;
+if(!/render=1/.test(location.search)){const t0=performance.now();const loopf=()=>{const t=((performance.now()-t0)/1000)%window.DURATION;render(t);requestAnimationFrame(loopf)};requestAnimationFrame(loopf)}
+else render(0);
+</script>
+</body>
+</html>
