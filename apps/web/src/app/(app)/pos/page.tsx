@@ -29,13 +29,16 @@ export default function PosPage() {
   const parsed = useMemo(() => { const m = /^(\d+(?:\.\d+)?)\*(.*)$/.exec(term); return m ? { qty: m[1]!, q: m[2]!.trim() } : { qty: '1', q: term.trim() }; }, [term]);
   const dq = useDebounced(parsed.q, 120);
   const remote = useGet<Sellable[]>(dq && online && loc.warehouse ? '/catalog/sellable' : null, { q: dq, warehouseId: loc.warehouse?.id, branchId: loc.branch?.id, limit: 12 });
+  // The cached catalogue answers instantly (and offline); server results replace it once they are
+  // for the text currently typed, so the list never shows matches for an earlier search.
   const results = useMemo<Sellable[]>(() => {
-    if (!dq) return [];
-    if (remote.data) return remote.data;
-    const t = dq.toLowerCase(); // offline (or still loading): fall back to the cached catalogue
-    return pos.catalog.filter((c) => c.barcodes.includes(dq) || c.sku.toLowerCase() === t || c.name.toLowerCase().includes(t)).slice(0, 12);
-  }, [dq, remote.data, pos.catalog]);
-  useEffect(() => { setActive(0); }, [dq]);
+    if (!parsed.q) return [];
+    if (remote.data && dq === parsed.q) return remote.data;
+    const t = parsed.q.toLowerCase();
+    const exact = pos.catalog.filter((c) => c.barcodes.includes(parsed.q) || c.sku.toLowerCase() === t);
+    return [...exact, ...pos.catalog.filter((c) => !exact.includes(c) && (c.name.toLowerCase().includes(t) || c.sku.toLowerCase().includes(t)))].slice(0, 12);
+  }, [parsed.q, dq, remote.data, pos.catalog]);
+  useEffect(() => { setActive(0); }, [parsed.q]);
 
   // Keep an offline copy of the catalogue for this counter.
   useEffect(() => {
@@ -55,9 +58,7 @@ export default function PosPage() {
     else if (e.key === 'Escape') setTerm('');
     else if (e.key === 'Enter' && parsed.q) {
       e.preventDefault();
-      if (dq === parsed.q && results.length) return addItem(results[active] ?? results[0]!);
-      const cached = pos.catalog.find((c) => c.barcodes.includes(parsed.q) || c.sku.toLowerCase() === parsed.q.toLowerCase());
-      if (cached) return addItem(cached);
+      if (results.length) return addItem(results[active] ?? results[0]!);
       try {
         const hits = await api<Sellable[]>('/catalog/sellable', { query: { q: parsed.q, warehouseId: loc.warehouse?.id, branchId: loc.branch?.id, limit: 5 } });
         if (hits.length === 1 || hits[0]?.exactMatch) addItem(hits[0]!); else if (!hits.length) toast.error(`No product found for "${parsed.q}"`);
@@ -132,12 +133,12 @@ export default function PosPage() {
   const canPrice = can('sales.price_override'), canDiscount = can('sales.discount');
 
   return (
-    <div className="grid h-full grid-rows-[1fr_auto] lg:grid-cols-[1fr_360px] lg:grid-rows-1">
-      <section className="flex min-h-0 flex-col">
+    <div className="grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_360px] lg:grid-rows-1">
+      <section className="flex min-h-0 min-w-0 flex-col">
         <div className="relative border-b bg-surface p-3">
           <ScanLine className="pointer-events-none absolute left-6 top-[22px] h-5 w-5 text-faint" />
           <input ref={searchRef} value={term} onChange={(e) => setTerm(e.target.value)} onKeyDown={onSearchKey} aria-label="Search or scan product" autoComplete="off" spellCheck={false}
-            placeholder="Scan barcode or type product name / SKU   (qty shortcut: 3*name)" className="h-11 w-full rounded-lg border bg-bg pl-11 pr-24 text-base placeholder:text-faint focus-visible:border-brand" />
+            placeholder="Scan barcode or type name / SKU  ·  3*name adds three" className="h-11 w-full rounded-lg border bg-bg pl-11 pr-12 text-base placeholder:text-faint focus-visible:border-brand" />
           <span className="absolute right-6 top-[22px] flex items-center gap-1.5 text-xs text-faint"><Kbd>F2</Kbd></span>
           {parsed.q && (
             <ul role="listbox" className="absolute left-3 right-3 top-[60px] z-30 max-h-[60vh] overflow-y-auto rounded-lg border bg-raised shadow-pop">
@@ -149,16 +150,16 @@ export default function PosPage() {
                     {r.trackInventory && r.type === 'GOODS' && <p className={cn('num text-xs', Number(r.stock) <= 0 ? 'text-bad' : 'text-muted')}>{fmtQty(r.stock)} {r.baseUnit.code} in stock</p>}</div>
                 </li>
               ))}
-              {!results.length && <li className="px-3 py-4 text-center text-sm text-muted">{remote.isFetching ? 'Searching…' : 'No matching product'}</li>}
+              {!results.length && <li className="px-3 py-4 text-center text-sm text-muted">{remote.isFetching || dq !== parsed.q ? 'Searching…' : 'No matching product'}</li>}
             </ul>
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-surface">
+        <div className="min-h-0 flex-1 overflow-auto bg-surface">
           {cart.lines.length === 0 ? (
             <EmptyState icon={ScanLine} title="Start a new bill" description="Scan a barcode or search for a product. Everything on this screen works from the keyboard." />
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="sticky top-0 z-10 bg-surface"><tr className="border-b text-left text-2xs uppercase tracking-wider text-faint">
                 <th className="px-3 py-2 font-semibold">#</th><th className="px-2 py-2 font-semibold">Item</th><th className="px-2 py-2 text-center font-semibold">Qty</th><th className="px-2 py-2 font-semibold">Unit</th>
                 <th className="px-2 py-2 text-right font-semibold">Rate</th><th className="px-2 py-2 text-right font-semibold">Disc %</th><th className="px-2 py-2 text-right font-semibold">Amount</th><th className="w-8" />
@@ -173,7 +174,7 @@ export default function PosPage() {
         </div>
       </section>
 
-      <aside className="flex flex-col border-t bg-surface lg:border-l lg:border-t-0">
+      <aside className="flex max-h-[55vh] min-w-0 flex-col border-t bg-surface lg:max-h-none lg:border-l lg:border-t-0">
         <div className="flex items-center gap-2 border-b p-3">
           <button onClick={() => setDialog('customer')} className="flex min-w-0 flex-1 items-center gap-2 rounded-md border px-2.5 py-1.5 text-left hover:bg-ink/5">
             <UserRound className="h-4 w-4 shrink-0 text-faint" />

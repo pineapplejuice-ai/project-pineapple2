@@ -1,0 +1,50 @@
+# Local / single-server stack: Postgres, one-off migration job, API and web.
+#   cp .env.example .env   (set real secrets)   &&   docker compose up --build
+name: nexbill
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      NEXBILL_OWNER_PASSWORD: ${NEXBILL_OWNER_PASSWORD:?set NEXBILL_OWNER_PASSWORD in .env}
+      NEXBILL_APP_PASSWORD: ${NEXBILL_APP_PASSWORD:?set NEXBILL_APP_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infrastructure/docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexbill"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports: ["127.0.0.1:5432:5432"]
+
+  migrate:
+    build: { context: ., dockerfile: infrastructure/docker/api.Dockerfile }
+    working_dir: /repo/packages/database
+    command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://nexbill_app:${NEXBILL_APP_PASSWORD}@postgres:5432/nexbill?schema=public
+      DATABASE_MIGRATION_URL: postgresql://nexbill_owner:${NEXBILL_OWNER_PASSWORD}@postgres:5432/nexbill?schema=public
+    depends_on: { postgres: { condition: service_healthy } }
+    restart: "no"
+
+  api:
+    build: { context: ., dockerfile: infrastructure/docker/api.Dockerfile }
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://nexbill_app:${NEXBILL_APP_PASSWORD}@postgres:5432/nexbill?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (32+ random characters)}
+      WEB_ORIGIN: ${PUBLIC_WEB_URL:-http://localhost:3000}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:3000}
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    restart: unless-stopped
+
+  web:
+    build: { context: ., dockerfile: infrastructure/docker/web.Dockerfile, args: { API_URL: "http://api:4000" } }
+    depends_on: [api]
+    ports: ["3000:3000"]
+    restart: unless-stopped
+
+volumes:
+  pgdata:

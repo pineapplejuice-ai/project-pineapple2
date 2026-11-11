@@ -15,5 +15,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // The service worker only caches the app shell and static assets; API data is never cached by it.
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') navigator.serviceWorker.register('/sw.js').catch(() => undefined);
   }, []);
-  return <QueryClientProvider client={client}>{children}<Toaster position="top-right" richColors closeButton theme={theme} /></QueryClientProvider>;
+  return <QueryClientProvider client={client}>{children}<Toaster position="bottom-right" richColors closeButton theme={theme} /></QueryClientProvider>;
 }

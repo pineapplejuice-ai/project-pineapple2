@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "pnpm -r --workspace-concurrency=1 build",
     "build:packages": "pnpm --filter './packages/*' --workspace-concurrency=1 build",
@@ -11,7 +13,7 @@
     "dev:web": "pnpm --filter @nexbill/web dev",
     "db:generate": "pnpm --filter @nexbill/database generate",
     "db:migrate": "pnpm --filter @nexbill/database migrate:deploy",
-    "db:seed": "pnpm --filter @nexbill/database seed",
+    "db:seed": "node scripts/seed-demo.mjs",
     "test": "pnpm -r --workspace-concurrency=1 test",
     "typecheck": "pnpm -r typecheck",
     "e2e": "pnpm --filter @nexbill/web e2e"

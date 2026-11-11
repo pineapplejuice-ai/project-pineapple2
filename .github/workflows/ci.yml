@@ -1,0 +1,65 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://nexbill_app:nexbill_app@localhost:5432/nexbill?schema=public
+      DATABASE_MIGRATION_URL: postgresql://nexbill_owner:nexbill@localhost:5432/nexbill?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      - name: Create database roles (owner for migrations, unprivileged role for the API)
+        env: { PGPASSWORD: postgres }
+        run: |
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE nexbill_owner LOGIN PASSWORD 'nexbill' CREATEDB;
+          CREATE ROLE nexbill_app LOGIN PASSWORD 'nexbill_app';
+          CREATE DATABASE nexbill OWNER nexbill_owner;
+          CREATE DATABASE nexbill_test OWNER nexbill_owner;
+          SQL
+
+      - name: Build shared packages
+        run: pnpm build:packages
+      - name: Type-check
+        run: pnpm typecheck
+      - name: Unit tests (tax engine, GST, units, permissions)
+        run: pnpm --filter @nexbill/shared test
+      - name: Integration tests (auth, tenant isolation, billing, concurrency, purchases, returns)
+        run: pnpm --filter @nexbill/api test
+      - name: Dependency audit
+        run: pnpm audit --prod --audit-level high
+        continue-on-error: true
+
+      - name: Build API and web
+        run: pnpm --filter @nexbill/api build && pnpm --filter @nexbill/web build
+      - name: Migrate the e2e database
+        run: pnpm db:migrate
+      - name: Install browser
+        run: pnpm --filter @nexbill/web exec playwright install --with-deps chromium
+      - name: End-to-end tests
+        run: |
+          (cd apps/api && AUTH_RATE_LIMIT_PER_MINUTE=1000 node dist/main.js &)
+          (cd apps/web && pnpm start &)
+          npx --yes wait-on http://localhost:4000/api/v1/health http://localhost:3000/login
+          pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-results, path: apps/web/test-results, retention-days: 7 }
