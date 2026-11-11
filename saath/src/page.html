@@ -1,106 +1,212 @@
 <title>Saath Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400..700&family=Noto+Sans+Devanagari:wght@400..700&family=Noto+Sans+Kannada:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Noto+Sans+Devanagari:wght@400..700&family=Noto+Sans+Kannada:wght@400..700&family=Noto+Serif+Kannada:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap">
 <style>
 /*APP_CSS*/
-/* ---- page shell: device on the left, story controls on the right (desktop); app fills the screen on phones ---- */
-:root{--shell:#E9EAF5;--shell-ink:#16153A;--shell-mu:#5F6288;--shell-card:#FFFFFF;--shell-line:#D9DBEC;--frame:#16153A}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--shell:#09081A;--shell-ink:#EDEDFB;--shell-mu:#9A9CC6;--shell-card:#141334;--shell-line:#26255040;--frame:#000}}
-:root[data-theme="dark"]{--shell:#09081A;--shell-ink:#EDEDFB;--shell-mu:#9A9CC6;--shell-card:#141334;--shell-line:#26255040;--frame:#000}
+/* ---- page: two phones with the story guide between them (desktop); one phone + step bar (narrow) ---- */
+:root{--pg:#ECECE8;--pg-ink:#1B1B19;--pg-mu:#6E6E67;--pg-line:#D9D9D3;--pg-card:#F7F7F4;--frame:#1B1B19;--glow:rgba(27,27,25,.12)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg:#0C0C0B;--pg-ink:#EFEFEA;--pg-mu:#96968E;--pg-line:#2A2A27;--pg-card:#161615;--frame:#000;--glow:rgba(255,255,255,.12)}}
+:root[data-theme="dark"]{--pg:#0C0C0B;--pg-ink:#EFEFEA;--pg-mu:#96968E;--pg-line:#2A2A27;--pg-card:#161615;--frame:#000;--glow:rgba(255,255,255,.12)}
 html,body{height:100%}
-body{background:var(--shell);color:var(--shell-ink);font-family:"Inter",system-ui,sans-serif;margin:0}
-.shell{min-height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding-block:28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.device{position:relative;width:414px;height:868px;flex:none;border-radius:58px;background:var(--frame);padding:12px;box-shadow:0 0 0 1.5px #3B3A6A,0 40px 90px rgba(22,21,58,.28)}
-.device #app{width:390px;height:844px;border-radius:46px;overflow:hidden}
-.who-label{position:absolute;left:0;right:0;top:-30px;text-align:center;font-size:13px;font-weight:650;color:var(--shell-mu)}
-.panel{width:380px;max-width:100%;display:flex;flex-direction:column;gap:18px}
-.brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",Inter,sans-serif;font-weight:800;font-size:22px}
-.brand small{font-family:Inter;font-weight:600;font-size:12px;color:var(--shell-mu);border:1px solid var(--shell-line);border-radius:8px;padding:3px 8px}
-.panel h1{font-family:"Bricolage Grotesque",Inter,sans-serif;font-size:34px;line-height:1.08;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.panel p{margin:0;color:var(--shell-mu);font-size:15px;line-height:1.55}
-.lbl{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--shell-mu)}
-.persona{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.persona button,.moment{font:inherit;color:inherit;text-align:left;cursor:pointer;background:var(--shell-card);border:1.5px solid var(--shell-line);border-radius:16px;padding:12px}
-.persona button.on{border-color:#3A3DB5;box-shadow:0 0 0 3px rgba(58,61,181,.15)}
-.persona b{display:block;font-size:14px}.persona span{font-size:12.5px;color:var(--shell-mu)}
-.moments{display:flex;flex-direction:column;gap:8px}
-.moment{display:flex;align-items:center;gap:12px;padding:11px 12px}
-.moment:hover,.persona button:hover{border-color:#3A3DB5}
-.moment:focus-visible,.persona button:focus-visible,.fab:focus-visible{outline:2px solid #3A3DB5;outline-offset:2px}
-.moment i{width:30px;height:30px;border-radius:10px;background:#E6E7FB;color:#3A3DB5;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:13px;flex:none}
-.moment b{font-size:14px;display:block}.moment span{font-size:12.5px;color:var(--shell-mu)}
-.foot-note{font-size:12px;color:var(--shell-mu);line-height:1.5}
-.reset{align-self:flex-start;font:inherit;font-size:13px;font-weight:650;color:#3A3DB5;background:none;border:0;cursor:pointer;padding:0}
-.fab,.demo-sheet{display:none}
-@media (max-width:900px){ .panel{width:330px} .shell{gap:28px} }
-@media (max-width:760px){
-  .shell{display:block;padding:0}
-  .panel{display:none}
-  .device{position:fixed;inset:0;width:auto;height:auto;border-radius:0;padding:0;box-shadow:none;background:var(--bg)}
-  .device #app{width:100%;height:100%;border-radius:0}
-  .who-label{display:none}
-  .fab{display:flex;position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:19px;border:0;background:#16153A;color:#fff;font:600 13px Inter,sans-serif;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer}
-  .demo-sheet{position:fixed;inset:0;z-index:120;background:rgba(10,10,30,.5)}
-  .demo-sheet.open{display:block}
-  .demo-sheet .in{position:absolute;left:0;right:0;bottom:0;background:var(--shell);border-radius:22px 22px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;max-height:85%;overflow:auto}
+body{margin:0;background:var(--pg);color:var(--pg-ink);font-family:Inter,system-ui,sans-serif}
+.wrap{min-height:100%;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;height:60px;flex:none}
+.brand{display:flex;align-items:center;gap:9px;font-family:"Source Serif 4",Georgia,serif;font-size:22px;font-weight:600}
+.brand small{font-family:Inter;font-size:12.5px;font-weight:500;color:var(--pg-mu);margin-left:4px}
+.sound{display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;border-radius:18px;border:1px solid var(--pg-line);background:none;color:var(--pg-ink);font:500 13.5px Inter,sans-serif;cursor:pointer}
+.sound:focus-visible,.g-btn:focus-visible,.g-list button:focus-visible,.seg button:focus-visible{outline:2px solid var(--pg-ink);outline-offset:2px}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;gap:44px;padding-bottom:18px}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.label{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--pg-mu);white-space:nowrap}
+.label b{color:var(--pg-ink);font-weight:600}
+.label .av{width:26px;height:26px;font-size:13px}
+.device{box-sizing:border-box;position:relative;width:414px;height:868px;border-radius:58px;background:var(--frame);padding:12px;box-shadow:0 30px 70px rgba(0,0,0,.18);transition:box-shadow .4s}
+.device.attn{box-shadow:0 0 0 4px var(--glow),0 30px 70px rgba(0,0,0,.18)}
+.device .screen{width:390px;height:844px;border-radius:46px;overflow:hidden}
+.scaler{transform-origin:top center}
+.guide{width:290px;flex:none;align-self:center}
+.g-k{font-size:13px;color:var(--pg-mu);font-weight:500}
+.g-t{font-family:"Source Serif 4",Georgia,serif;font-size:30px;font-weight:500;line-height:1.15;margin:6px 0 12px;text-wrap:balance}
+.g-p{font-size:15.5px;line-height:1.55;color:var(--pg-ink);margin:0}
+.g-do{margin-top:18px;padding:14px 16px;border-radius:14px;background:var(--pg-card);border:1px solid var(--pg-line);font-size:15px;font-weight:600;line-height:1.45;display:flex;gap:10px;align-items:flex-start;min-height:52px}
+.g-do .arr{font-size:18px;line-height:1.2}
+.g-row{display:flex;gap:16px;margin-top:16px;align-items:center}
+.g-btn{background:none;border:0;padding:0;color:var(--pg-mu);font:500 14px Inter,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.g-list{list-style:none;margin:30px 0 0;padding:16px 0 0;border-top:1px solid var(--pg-line);display:flex;flex-direction:column;gap:2px}
+.g-list button{width:100%;display:flex;gap:12px;align-items:center;padding:8px 0;background:none;border:0;color:var(--pg-mu);font:500 14.5px Inter,sans-serif;cursor:pointer;text-align:left}
+.g-list button .n{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--pg-line);display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.g-list button.cur{color:var(--pg-ink);font-weight:600}
+.g-list button.cur .n{border-color:var(--pg-ink);background:var(--pg-ink);color:var(--pg)}
+.g-list button.done .n{border-color:var(--pg-ink)}
+.hint{position:fixed;z-index:20;pointer-events:none;border-radius:18px;box-shadow:0 0 0 3px #E8A33D;animation:hint 1.4s ease-in-out infinite;display:none}
+@keyframes hint{0%,100%{box-shadow:0 0 0 3px rgba(232,163,61,.95),0 0 0 3px rgba(232,163,61,.5)}60%{box-shadow:0 0 0 3px rgba(232,163,61,.95),0 0 0 14px rgba(232,163,61,0)}}
+@media (prefers-reduced-motion: reduce){.hint{animation:none}}
+.mbar{display:none}
+/* ---- single-phone layout ---- */
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mstep{font-size:13px;color:var(--pg-mu);font-weight:500}
+.mdo{font-size:15px;font-weight:600;line-height:1.4;min-height:21px}
+.seg{display:flex;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:34px;border:0;border-radius:9px;background:none;color:var(--pg-mu);font:600 13.5px Inter,sans-serif;cursor:pointer;position:relative}
+.seg button.on{background:var(--pg-ink);color:var(--pg)}
+.seg button .ping{position:absolute;top:6px;right:8px;width:7px;height:7px;border-radius:50%;background:#E8A33D;display:none}
+.seg button.attn .ping{display:block}
+.mnext{background:none;border:0;color:var(--pg-mu);font:500 13px Inter,sans-serif;text-decoration:underline;cursor:pointer;padding:0}
+@media (max-width:999px){
+  .stage{gap:0}
+  .guide,.top,.label{display:none}
+  .col.off{display:none}
+  .mbar{display:flex;flex-direction:column;gap:10px;padding:10px 0 12px;flex:none}
+}
+@media (max-width:599px){
+  html,body{overflow:hidden}
+  .wrap{padding:0;height:100%}
+  .mbar{padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--pg-line)}
+  .stage{padding:0;align-items:stretch;height:0;min-height:0}
+  .col{flex:1;gap:0;min-width:0}
+  .scaler{transform:none!important;flex:1;display:flex;width:100%!important;height:auto!important}
+  .device{width:100%;height:100%;border-radius:0;padding:0;box-shadow:none;background:var(--bg)}
+  .device .screen{width:100%;height:100%;border-radius:0}
 }
 </style>
 
-<div class="shell">
-  <div class="device"><div class="who-label" id="who-label">Priya’s phone · Bengaluru</div><div id="app"></div></div>
-  <aside class="panel" id="panel">
-    <div class="brand"><svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#3A3DB5"/><path d="M12 25L24 14l12 11" fill="none" stroke="#F2A200" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="31" r="4" fill="#fff"/><circle cx="29" cy="31" r="4" fill="#fff" opacity=".75"/></svg>Saath <small>Clickable prototype</small></div>
-    <h1>Care for your parents, from wherever you are.</h1>
-    <p>Priya lives in Bengaluru. Her parents, 72 and 66, live in Mysuru. Saath checks on them every morning with a voice call in Kannada, sends trusted local help when they need it, and keeps the whole family in the loop.</p>
-    <div class="lbl">Whose phone?</div>
-    <div class="persona" id="persona">
-      <button data-scn="child" class="on"><b>Priya</b><span>Daughter · Bengaluru</span></button>
-      <button data-scn="parent"><b>Amma</b><span>Lakshmi, 66 · Mysuru</span></button>
-    </div>
-    <div class="lbl">Try a moment</div>
-    <div class="moments" id="moments">
-      <button class="moment" data-scn="call"><i>1</i><span><b>Amma’s morning check-in</b><span>A voice call in Kannada. Press 1, then 1.</span></span></button>
-      <button class="moment" data-scn="book"><i>2</i><span><b>Get Appa to his doctor</b><span>Book a verified Sahayak and pay with UPI</span></span></button>
-      <button class="moment" data-scn="visit"><i>3</i><span><b>Follow the visit</b><span>Live updates, photo check-in, doctor’s notes</span></span></button>
-      <button class="moment" data-scn="help"><i>4</i><span><b>Amma presses Help</b><span>Neighbour, Sahayak and family move together</span></span></button>
-      <button class="moment" data-scn="family"><i>5</i><span><b>Share the care</b><span>Siblings split tasks and costs</span></span></button>
-    </div>
-    <button class="reset" data-scn="reset">Reset the demo</button>
-    <div class="foot-note">Concept prototype. People, places, prices and medical details are illustrative. Kannada and Hindi text needs review by native speakers.</div>
-  </aside>
+<div class="wrap">
+  <header class="top"><div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="12" r="6.2" fill="currentColor"/><circle cx="17.2" cy="12" r="4.4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Saath <small>Clickable prototype · illustrative people and data</small></div>
+    <button class="sound" id="sound" aria-pressed="true">Sound on</button></header>
+  <div class="mbar" id="mbar">
+    <div class="mrow"><span class="mstep" id="m-step">Step 1 of 4 · Morning call</span><span style="display:flex;gap:14px;align-items:center"><button class="mnext" id="m-sound" aria-pressed="true">Sound on</button><button class="mnext" id="m-next">Skip step</button></span></div>
+    <div class="mdo" id="m-do"></div>
+    <div class="seg" role="tablist" aria-label="Which phone"><button id="m-amma" role="tab">Amma’s phone<span class="ping"></span></button><button id="m-priya" role="tab">Priya’s phone<span class="ping"></span></button></div>
+  </div>
+  <main class="stage">
+    <section class="col" id="col-amma"><div class="label"><span class="av amma">L</span><b>Amma’s phone</b>Lakshmi, 66 · Mysuru</div><div class="scaler"><div class="device" id="dev-amma"><div class="screen" id="amma"></div></div></div></section>
+    <aside class="guide" id="guide" aria-live="polite"></aside>
+    <section class="col" id="col-priya"><div class="label"><span class="av priya">P</span><b>Priya’s phone</b>Daughter · Bengaluru</div><div class="scaler"><div class="device" id="dev-priya"><div class="screen" id="priya"></div></div></div></section>
+  </main>
 </div>
-<button class="fab" id="fab" aria-haspopup="dialog">Demo</button>
-<div class="demo-sheet" id="demo-sheet" role="dialog" aria-label="Demo controls"><div class="in" id="demo-in"></div></div>
+<div class="hint" id="hint" aria-hidden="true"></div>
 
+<script>
+//SOUND_JS
+</script>
 <script>
 //APP_JS
 </script>
 <script>
-(function(){
-  const app = Saath.mount(document.getElementById('app'), { framed: !matchMedia('(max-width:760px)').matches, onChange: sync });
-  function sync(s){
-    document.querySelectorAll('#persona button,#demo-in .persona button').forEach(b=>b.classList.toggle('on', (b.dataset.scn==='parent') === (s.role==='parent')));
-    const wl=document.getElementById('who-label'); if(wl) wl.textContent = s.role==='parent' ? 'Amma’s phone · Mysuru' : 'Priya’s phone · Bengaluru';
+(function () {
+  const STEPS = [
+    { t: 'Morning call', p: 'It’s 8:30 AM in Mysuru. Every morning Saath calls Amma in Kannada. She doesn’t need a smartphone, just the keypad.' },
+    { t: 'Find a helper', p: 'In Bengaluru, Priya sees her mother is fine. But Appa has a heart check-up at 4:30 PM and no one can go with him.' },
+    { t: 'The visit', p: 'At 4 PM a verified local helper, Ravi, takes Appa to the doctor and sends Priya what the doctor said.' },
+    { t: 'Help button', p: 'That evening Amma feels dizzy. One press tells her daughter, her neighbour and Ravi at the same time.' }
+  ];
+  const $ = id => document.getElementById(id);
+  const store = Saath.createStore({ onChange: () => { refresh(true); }, onSound: n => SaathSound.play(n) });
+  store.attach('amma', $('amma'), { framed: true });
+  store.attach('priya', $('priya'), { framed: true });
+
+  function cue() {
+    const S = store, W = S.W, A = S.P.amma, P = S.P.priya, t = S.now();
+    switch (W.step) {
+      case 1: { const s = W.call.stage;
+        if (s === 0) return { dev: 'amma', sel: '#answer', text: 'Answer the call on Amma’s phone.' };
+        if (s === 1) return { dev: 'amma', sel: '#key-1', text: 'Press 1. She took her medicine.' };
+        if (s === 2) return { dev: 'amma', sel: '#key-1', text: 'Press 1 again. She’s feeling fine.' };
+        return { dev: 'priya', sel: null, text: 'Now watch Priya’s phone.' }; }
+      case 2:
+        if (P.banner && t - P.banner.at < 5.5 && P.screen === 'p_home' && !P.sheet) return { dev: 'priya', sel: '#banner', text: 'Priya got a notification. Tap it.' };
+        if (P.screen === 'p_request') { if (P.sheet) return { dev: 'priya', sel: null, text: 'Paying with UPI…' };
+          return W.booked ? { dev: 'priya', sel: '#done-request', text: 'Ravi is booked. Tap Done.' } : { dev: 'priya', sel: '#pay', text: 'Read the details, then pay ₹399 with UPI.' }; }
+        if (P.screen !== 'p_home') return { dev: 'priya', sel: '.layer.cur [data-act=back]', text: 'Go back to Priya’s home screen.' };
+        return { dev: 'priya', sel: '#find-help', text: 'Tap “Find someone to go”.' };
+      case 3:
+        if (P.screen === 'p_visit') return { dev: 'priya', sel: null, text: 'The visit updates by itself. Scroll down for the doctor’s advice.' };
+        if (P.screen !== 'p_home') return { dev: 'priya', sel: '.layer.cur [data-act=back]', text: 'Go back to Priya’s home screen.' };
+        return { dev: 'priya', sel: '#see-visit', text: 'Tap “See the visit”.' };
+      case 4:
+        if (W.alert && !W.resolved) {
+          if (P.screen !== 'p_alert') return { dev: 'priya', sel: '#open-alert', text: 'Open the alert on Priya’s phone.' };
+          if (t < W.alert.at + 4.8) return { dev: 'priya', sel: null, text: 'Watch who is on the way.' };
+          return { dev: 'priya', sel: '#close-alert', text: 'Shobha is with Amma. Close the alert.' }; }
+        if (W.help) return { dev: 'priya', sel: null, text: 'Priya’s phone is about to light up.' };
+        return { dev: 'amma', sel: '#help', text: 'Press Help on Amma’s phone.' };
+      default: return { dev: null, sel: null, text: '' };
+    }
   }
-  function run(k){
-    if(k==='reset'){ app.dispatch('reset'); return; }
-    if(k==='child'||k==='parent'){ app.dispatch('role', k); return; }
-    app.dispatch('scenario', k);
+
+  /* ---- guide (desktop) and step bar (narrow) ---- */
+  let lastKey = '', single = false, shown = 'amma';
+  function refresh(force) {
+    const W = store.W, c = cue(), step = Math.min(W.step, 5);
+    const key = step + '|' + c.text + '|' + c.dev;
+    if (!force && key === lastKey) return; lastKey = key;
+    const done = step > 4;
+    const arrow = c.dev === 'amma' ? '←' : c.dev === 'priya' ? '→' : '';
+    $('guide').innerHTML = done
+      ? `<div class="g-k">The end</div><div class="g-t">That’s Saath.</div><p class="g-p">A daily call in her own language. A trusted helper nearby. The whole family in the loop.</p><div class="g-row"><button class="g-btn" data-restart>Start over</button></div>${list(step)}`
+      : `<div class="g-k">Step ${step} of 4</div><div class="g-t">${STEPS[step - 1].t}</div><p class="g-p">${STEPS[step - 1].p}</p>
+         <div class="g-do">${arrow ? `<span class="arr" aria-hidden="true">${arrow}</span>` : ''}<span>${c.text}</span></div>
+         <div class="g-row"><button class="g-btn" data-next>Skip this step</button><button class="g-btn" data-restart>Start over</button></div>${list(step)}`;
+    $('m-step').textContent = done ? 'The end · That’s Saath' : `Step ${step} of 4 · ${STEPS[step - 1].t}`;
+    $('m-do').textContent = done ? 'A daily call, a trusted helper, the family in the loop.' : c.text;
+    $('m-next').textContent = done ? 'Start over' : 'Skip step';
+    document.querySelectorAll('.device').forEach(d => d.classList.toggle('attn', !single && d.id === 'dev-' + c.dev));
+    if (single && c.dev && c.dev !== shown) showPhone(c.dev);
+    $('m-amma').classList.toggle('attn', c.dev === 'amma' && shown !== 'amma');
+    $('m-priya').classList.toggle('attn', c.dev === 'priya' && shown !== 'priya');
   }
-  document.addEventListener('click', e=>{ const b=e.target.closest('[data-scn]'); if(!b) return; run(b.dataset.scn); closeSheet(); });
-  // mobile: controls in a sheet
-  const sheet=document.getElementById('demo-sheet'), inner=document.getElementById('demo-in');
-  const panel=document.getElementById('panel');
-  inner.innerHTML = '<div class="lbl">Whose phone?</div>' + document.getElementById('persona').outerHTML.replace('id="persona"','') + '<div class="lbl">Try a moment</div>' + document.getElementById('moments').outerHTML.replace('id="moments"','') + '<button class="reset" data-scn="reset">Reset the demo</button><div class="foot-note">Concept prototype with illustrative data.</div>';
-  function closeSheet(){ sheet.classList.remove('open'); }
-  document.getElementById('fab').addEventListener('click', ()=>sheet.classList.add('open'));
-  sheet.addEventListener('click', e=>{ if(e.target===sheet) closeSheet(); });
-  sync(app.state);
-  // fit the framed phone to shorter laptop screens
-  const dev=document.querySelector('.device');
-  function fit(){ if(matchMedia('(max-width:760px)').matches){dev.style.transform='';dev.style.margin='';return;}
-    const k=Math.min(1,(innerHeight-70)/868); dev.style.transform=k<1?`scale(${k})`:''; dev.style.transformOrigin='center center'; dev.style.margin=k<1?`${-(868*(1-k))/2}px ${-(414*(1-k))/2}px`:''; }
-  addEventListener('resize',fit); fit();
+  function list(step) {
+    return `<ol class="g-list">${STEPS.map((s, i) => `<li><button class="${i + 1 === step ? 'cur' : i + 1 < step ? 'done' : ''}" data-goto="${i + 1}"><span class="n">${i + 1 < step ? '✓' : i + 1}</span>${s.t}</button></li>`).join('')}</ol>`;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-next],[data-restart],[data-goto]'); if (!b) return;
+    if (b.hasAttribute('data-restart')) store.gotoStep(1);
+    else if (b.hasAttribute('data-goto')) store.gotoStep(+b.dataset.goto);
+    else store.gotoStep(store.W.step >= 5 ? 1 : store.W.step + 1);
+  });
+  $('m-next').addEventListener('click', () => store.gotoStep(store.W.step >= 5 ? 1 : store.W.step + 1));
+  $('m-amma').addEventListener('click', () => showPhone('amma'));
+  $('m-priya').addEventListener('click', () => showPhone('priya'));
+  function showPhone(dev) { shown = dev; $('col-amma').classList.toggle('off', dev !== 'amma'); $('col-priya').classList.toggle('off', dev !== 'priya');
+    $('m-amma').classList.toggle('on', dev === 'amma'); $('m-priya').classList.toggle('on', dev === 'priya'); lastKey = ''; }
+
+  /* ---- hint ring on the next thing to tap ---- */
+  const hint = $('hint');
+  function placeHint() {
+    const c = cue(); let el = null;
+    if (c.sel && (!single || c.dev === shown)) el = $(c.dev).querySelector('.layer.cur ' + c.sel) || $(c.dev).querySelector(c.sel);
+    if (el) { const r = el.getBoundingClientRect(); if (r.width) { hint.style.display = 'block'; hint.style.left = (r.left - 5) + 'px'; hint.style.top = (r.top - 5) + 'px'; hint.style.width = (r.width + 10) + 'px'; hint.style.height = (r.height + 10) + 'px';
+        hint.style.borderRadius = getComputedStyle(el).borderRadius === '50%' ? '50%' : (parseFloat(getComputedStyle(el).borderRadius) + 5 || 16) + 'px'; } else hint.style.display = 'none'; }
+    else hint.style.display = 'none';
+    refresh(false);
+    requestAnimationFrame(placeHint);
+  }
+
+  /* ---- layout: fit two phones, or switch to one ---- */
+  function layout() {
+    const w = innerWidth, h = innerHeight;
+    single = matchMedia('(max-width:999px)').matches;
+    const bleed = matchMedia('(max-width:599px)').matches;
+    ['amma', 'priya'].forEach(d => $(d).classList.toggle('framed', !bleed));
+    if (single) { showPhone(shown); }
+    else { $('col-amma').classList.remove('off'); $('col-priya').classList.remove('off'); }
+    const avail = single ? h - 150 : h - 60 - 60;
+    let s = Math.min(1, avail / 868);
+    if (!single) s = Math.min(s, (w - 290 - 88 - 40) / 828);
+    document.querySelectorAll('.scaler').forEach(x => { x.style.transform = bleed ? '' : `scale(${s})`; x.style.height = bleed ? '' : (868 * s) + 'px'; x.style.width = bleed ? '' : (414 * s) + 'px'; x.style.transformOrigin = 'top left'; });
+    lastKey = '';
+  }
+  addEventListener('resize', layout); layout();
+
+  /* ---- sound ---- */
+  function setSound(v) { SaathSound.setOn(v); ['sound', 'm-sound'].forEach(id => { $(id).textContent = v ? 'Sound on' : 'Sound off'; $(id).setAttribute('aria-pressed', v); });
+    if (v && store.W.call.stage === 0 && store.W.step === 1) SaathSound.play('ring_start'); }
+  $('sound').addEventListener('click', () => setSound(!SaathSound.isOn()));
+  $('m-sound').addEventListener('click', () => setSound(!SaathSound.isOn()));
+  addEventListener('pointerdown', function first() { removeEventListener('pointerdown', first); SaathSound.unlock(); if (SaathSound.isOn() && store.W.call.stage === 0 && store.W.step === 1) setTimeout(() => { if (store.W.call.stage === 0) SaathSound.play('ring_start'); }, 60); });
+
+  refresh(true); requestAnimationFrame(placeHint);
 })();
 </script>

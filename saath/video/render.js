@@ -55,10 +55,17 @@ const page = 'file://' + path.resolve(__dirname, 'video.html') + '?render=1';
       if (++done % 300 === 0) console.log(`${done}/${total} frames (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     }
   }));
+  // soundtrack: the page recorded every sound cue during its dry run
+  const specPage = await newPage();
+  const spec = await specPage.evaluate(() => window.AUDIO_SPEC);
   await browser.close();
+  const specPath = path.join(outDir, 'audio-spec.json'), wav = path.join(outDir, 'soundtrack.wav');
+  fs.writeFileSync(specPath, JSON.stringify(spec, null, 1));
+  execFileSync('python3', [path.join(__dirname, 'audio.py'), specPath, wav], { stdio: 'inherit' });
 
   const mp4 = path.join(outDir, 'saath-prototype.mp4');
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(framesDir, 'f%05d.jpg'),
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4], { stdio: 'inherit' });
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(framesDir, 'f%05d.jpg'), '-i', wav,
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p',
+    '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', mp4], { stdio: 'inherit' });
   console.log('wrote', mp4);
 })();
