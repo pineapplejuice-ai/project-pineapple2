@@ -16,8 +16,7 @@ import { ApiZod, ZBody, ZQuery } from '../common/zod';
 import { SubscriptionService } from './business';
 import { StockService } from './inventory';
 
-const isUniqueViolation = (e: unknown, field: string): boolean =>
-  e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002' && JSON.stringify(e.meta ?? {}).includes(field);
+const isUniqueViolation = (e: unknown): boolean => e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002';
 
 @Injectable()
 export class SalesService {
@@ -54,12 +53,13 @@ export class SalesService {
     try {
       return await this.prisma.tenantTx(ctx.tenantId, (tx) => this.createInTx(tx, ctx, input, replaceDraftId));
     } catch (e) {
-      if (input.idempotencyKey && isUniqueViolation(e, 'idempotencyKey')) {
-        // a concurrent request with the same key won the race: return its invoice instead of a duplicate
-        return this.prisma.tenantTx(ctx.tenantId, async (tx) => {
-          const inv = await tx.salesInvoice.findUniqueOrThrow({ where: { tenantId_idempotencyKey: { tenantId: ctx.tenantId, idempotencyKey: input.idempotencyKey! } }, select: { id: true } });
-          return { ...(await this.detail(tx, ctx, inv.id)), replayed: true };
+      if (input.idempotencyKey && isUniqueViolation(e)) {
+        // a concurrent request with the same key may have won the race: return its invoice instead of a duplicate
+        const won = await this.prisma.tenantTx(ctx.tenantId, async (tx) => {
+          const inv = await tx.salesInvoice.findUnique({ where: { tenantId_idempotencyKey: { tenantId: ctx.tenantId, idempotencyKey: input.idempotencyKey! } }, select: { id: true } });
+          return inv ? { ...(await this.detail(tx, ctx, inv.id)), replayed: true } : null;
         });
+        if (won) return won;
       }
       throw e;
     }
@@ -250,7 +250,8 @@ export class SalesService {
     try {
       return await this.prisma.tenantTx(ctx.tenantId, (tx) => this.returnInTx(tx, ctx, input));
     } catch (e) {
-      if (input.idempotencyKey && isUniqueViolation(e, 'idempotencyKey')) return this.prisma.tenantTx(ctx.tenantId, findExisting);
+      const won = input.idempotencyKey && isUniqueViolation(e) ? await this.prisma.tenantTx(ctx.tenantId, findExisting) : null;
+      if (won) return won;
       throw e;
     }
   }

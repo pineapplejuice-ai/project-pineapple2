@@ -23,8 +23,9 @@ export class SubscriptionService {
   readonly gateway: PaymentGatewayAdapter = mockGateway;
   constructor(private readonly prisma: PrismaService) {}
 
-  async plan(tenantId: string): Promise<PlanCode> {
-    const sub = await this.prisma.subscription.findUnique({ where: { tenantId } });
+  /** Pass the open transaction when calling from inside one: a second pool connection there can starve the pool under load. */
+  async plan(tenantId: string, db: Pick<Tx, 'subscription'> = this.prisma): Promise<PlanCode> {
+    const sub = await db.subscription.findUnique({ where: { tenantId } });
     return (sub?.plan ?? 'STARTER') as PlanCode;
   }
   async assertFeature(tenantId: string, feature: Feature): Promise<void> {
@@ -33,7 +34,7 @@ export class SubscriptionService {
       throw new HttpException({ message: `Your ${PLANS[plan].name} plan does not include this feature. Upgrade to use it.`, code: 'PLAN_FEATURE' }, 402);
   }
   async assertLimit(tx: Tx, ctx: Ctx, kind: 'businesses' | 'branches' | 'warehouses' | 'users' | 'invoicesPerMonth'): Promise<void> {
-    const plan = await this.plan(ctx.tenantId);
+    const plan = await this.plan(ctx.tenantId, tx);
     const limit = PLANS[plan].limits[kind];
     if (limit === null) return;
     const used = await this.usageOf(tx, ctx, kind);
@@ -45,7 +46,7 @@ export class SubscriptionService {
       case 'businesses': return tx.business.count();
       case 'branches': return tx.branch.count({ where: { isActive: true } });
       case 'warehouses': return tx.warehouse.count({ where: { isActive: true } });
-      case 'users': return this.prisma.membership.count({ where: { tenantId: ctx.tenantId, isActive: true } });
+      case 'users': return tx.membership.count({ where: { tenantId: ctx.tenantId, isActive: true } });
       default: return tx.salesInvoice.count({ where: { status: { not: 'DRAFT' }, createdAt: { gte: monthStart } } });
     }
   }
@@ -273,7 +274,7 @@ export class BusinessController {
     return this.prisma.tenantTx(ctx.tenantId, async (tx) => {
       const where = { ...(q.q ? { OR: [{ action: { contains: q.q } }, { entity: { contains: q.q } }] } : {}) };
       const [rows, total] = await Promise.all([tx.auditLog.findMany({ where, orderBy: { createdAt: 'desc' }, ...skipTake(q) }), tx.auditLog.count({ where })]);
-      const users = await this.prisma.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.userId))] } }, select: { id: true, name: true } });
+      const users = await tx.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.userId))] } }, select: { id: true, name: true } });
       const names = new Map(users.map((u) => [u.id, u.name]));
       return page(rows.map((r) => ({ ...r, userName: names.get(r.userId) ?? 'Unknown' })), total, q);
     });

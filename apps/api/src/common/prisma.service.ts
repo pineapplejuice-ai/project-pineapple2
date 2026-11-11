@@ -7,7 +7,11 @@ export type Tx = Prisma.TransactionClient;
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    super({ datasources: { db: { url: config.databaseUrl } } });
+    // Billing transactions hold a connection while they wait on row locks, so size the pool for
+    // peak concurrent writers (override with ?connection_limit= in DATABASE_URL).
+    const url = config.databaseUrl.includes('connection_limit') ? config.databaseUrl
+      : `${config.databaseUrl}${config.databaseUrl.includes('?') ? '&' : '?'}connection_limit=${config.dbPoolSize}`;
+    super({ datasources: { db: { url } } });
   }
   async onModuleInit(): Promise<void> { await this.$connect(); }
   async onModuleDestroy(): Promise<void> { await this.$disconnect(); }

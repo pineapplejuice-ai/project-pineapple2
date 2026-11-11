@@ -13,6 +13,7 @@ export const config = {
   isProd,
   port: Number(env.PORT ?? 4000),
   databaseUrl: env.DATABASE_URL ?? 'postgresql://nexbill_app:nexbill_app@localhost:5432/nexbill?schema=public',
+  dbPoolSize: Number(env.DB_POOL_SIZE ?? 20),
   jwtSecret: secret('JWT_SECRET', 'dev-only-jwt-secret-change-me-dev-only-jwt-secret'),
   accessTokenTtlSec: Number(env.ACCESS_TOKEN_TTL_SEC ?? 900),
   refreshTokenTtlDays: Number(env.REFRESH_TOKEN_TTL_DAYS ?? 30),

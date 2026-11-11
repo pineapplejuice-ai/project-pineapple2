@@ -156,7 +156,7 @@ export class InventoryController {
       const [rows, total] = await Promise.all([tx.stockMovement.findMany({ where, orderBy: { createdAt: 'desc' }, ...skipTake(q) }), tx.stockMovement.count({ where })]);
       const [variants, users, whs] = await Promise.all([
         tx.productVariant.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.variantId))] } }, select: { id: true, sku: true, name: true, product: { select: { name: true } } } }),
-        this.prisma.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.userId))] } }, select: { id: true, name: true } }),
+        tx.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.userId))] } }, select: { id: true, name: true } }),
         tx.warehouse.findMany({ where: { businessId: ctx.businessId }, select: { id: true, name: true } }),
       ]);
       const vm = new Map(variants.map((v) => [v.id, v])), um = new Map(users.map((u) => [u.id, u.name])), wm = new Map(whs.map((w) => [w.id, w.name]));
@@ -243,7 +243,8 @@ export class InventoryController {
         await tx.$executeRaw`UPDATE "InventoryBalance" SET "reserved" = "reserved" - ${i.quantity.toString()}::numeric WHERE "warehouseId" = ${t.fromWarehouseId}::uuid AND "variantId" = ${i.variantId}::uuid`;
         if (decision === 'approve') {
           const ref = { refType: 'STOCK_TRANSFER', refId: t.id, refNumber: t.number, variantId: i.variantId };
-          await this.stock.move(tx, ctx, { ...ref, warehouseId: t.fromWarehouseId, quantity: D(i.quantity.toString()).neg(), type: 'TRANSFER_OUT' });
+          const left = await this.stock.move(tx, ctx, { ...ref, warehouseId: t.fromWarehouseId, quantity: D(i.quantity.toString()).neg(), type: 'TRANSFER_OUT' });
+          await this.stock.alertIfLow(tx, ctx, i.variantId, left);
           await this.stock.move(tx, ctx, { ...ref, warehouseId: t.toWarehouseId, quantity: i.quantity.toString(), type: 'TRANSFER_IN' });
         }
       }
