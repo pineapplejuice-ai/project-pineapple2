@@ -1,0 +1,1162 @@
+// NEXBILL data model. Every tenant-owned table carries tenantId and is protected by PostgreSQL RLS
+// (see migrations/*_rls). Money = Decimal(14,2), quantities/prices = Decimal(14,4).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_MIGRATION_URL")
+}
+
+// ───────────── Identity & tenancy (not under RLS; scoped in code) ─────────────
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  passwordHash    String
+  name            String
+  phone           String?
+  emailVerifiedAt DateTime?
+  isPlatformAdmin Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  failedLogins    Int       @default(0)
+  lockedUntil     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  memberships Membership[]
+  sessions    Session[]
+  authTokens  AuthToken[]
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  tenantId         String?   @db.Uuid
+  /// sha256 of the current refresh token; rotated on every refresh
+  refreshTokenHash String    @unique
+  /// hashes of already-rotated tokens: presenting one again revokes the session (reuse detection)
+  previousHashes   String[]
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum AuthTokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+model AuthToken {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @db.Uuid
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships  Membership[]
+  roles        Role[]
+  businesses   Business[]
+  subscription Subscription?
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  /// OWNER, ADMIN, ... for seeded roles; null for custom roles
+  systemKey   String?
+  name        String
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberships Membership[]
+
+  @@unique([tenantId, name])
+}
+
+model Membership {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  /// empty = access to every branch
+  branchIds String[] @db.Uuid
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@unique([tenantId, userId])
+  @@index([userId])
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+model Subscription {
+  id                 String             @id @default(uuid()) @db.Uuid
+  tenantId           String             @unique @db.Uuid
+  plan               String
+  status             SubscriptionStatus @default(TRIALING)
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  /// plan to switch to at next renewal (downgrades)
+  pendingPlan        String?
+  provider           String?
+  providerRef        String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  tenant   Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoices SubscriptionInvoice[]
+}
+
+model SubscriptionInvoice {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  subscriptionId String   @db.Uuid
+  number         String   @unique
+  plan           String
+  amount         Decimal  @db.Decimal(14, 2)
+  taxAmount      Decimal  @db.Decimal(14, 2)
+  total          Decimal  @db.Decimal(14, 2)
+  status         String   @default("PAID")
+  periodStart    DateTime
+  periodEnd      DateTime
+  providerRef    String?
+  createdAt      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+// ───────────── Business structure ─────────────
+
+model Business {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @db.Uuid
+  name               String
+  legalName          String?
+  ownerName          String?
+  industry           String   @default("GENERAL")
+  phone              String?
+  email              String?
+  addressLine1       String?
+  addressLine2       String?
+  city               String?
+  stateCode          String   @db.Char(2)
+  pincode            String?
+  gstRegistered      Boolean  @default(false)
+  gstin              String?
+  pan                String?
+  currency           String   @default("INR")
+  fyStartMonth       Int      @default(4)
+  pricesIncludeTax   Boolean  @default(true)
+  roundOffInvoices   Boolean  @default(true)
+  allowNegativeStock Boolean  @default(false)
+  invoicePrefix      String   @default("INV")
+  invoiceTemplate    String   @default("A4")
+  invoiceTerms       String?
+  logoUrl            String?
+  /// dynamic preferences only (printer, theme, feature toggles)
+  settings           Json     @default("{}")
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branches Branch[]
+
+  @@index([tenantId])
+}
+
+model Branch {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  businessId String   @db.Uuid
+  name       String
+  code       String
+  address    String?
+  stateCode  String?  @db.Char(2)
+  phone      String?
+  isDefault  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  business   Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  warehouses Warehouse[]
+
+  @@unique([businessId, code])
+  @@index([tenantId])
+}
+
+model Warehouse {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  businessId String   @db.Uuid
+  branchId   String   @db.Uuid
+  name       String
+  isDefault  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, name])
+  @@index([tenantId])
+  @@index([businessId])
+}
+
+model DocumentSequence {
+  id         String @id @default(uuid()) @db.Uuid
+  tenantId   String @db.Uuid
+  businessId String @db.Uuid
+  docType    String
+  fy         String
+  prefix     String
+  nextNumber Int    @default(1)
+
+  @@unique([businessId, docType, fy])
+  @@index([tenantId])
+}
+
+model TaxConfiguration {
+  id         String  @id @default(uuid()) @db.Uuid
+  tenantId   String  @db.Uuid
+  businessId String  @db.Uuid
+  name       String
+  gstRate    Decimal @db.Decimal(5, 2)
+  cessRate   Decimal @default(0) @db.Decimal(5, 2)
+  isActive   Boolean @default(true)
+
+  @@unique([businessId, name])
+  @@index([tenantId])
+}
+
+// ───────────── Catalogue ─────────────
+
+model Category {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  businessId String   @db.Uuid
+  name       String
+  parentId   String?  @db.Uuid
+  createdAt  DateTime @default(now())
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@unique([businessId, parentId, name])
+  @@index([tenantId])
+}
+
+model Unit {
+  id         String @id @default(uuid()) @db.Uuid
+  tenantId   String @db.Uuid
+  businessId String @db.Uuid
+  code       String
+  name       String
+  decimals   Int    @default(0)
+
+  products     Product[]
+  productUnits ProductUnit[]
+
+  @@unique([businessId, code])
+  @@index([tenantId])
+}
+
+/// Business-wide conversion between two units (e.g. 1 KGS = 1000 GMS)
+model UnitConversion {
+  id         String  @id @default(uuid()) @db.Uuid
+  tenantId   String  @db.Uuid
+  businessId String  @db.Uuid
+  fromUnitId String  @db.Uuid
+  toUnitId   String  @db.Uuid
+  factor     Decimal @db.Decimal(18, 6)
+
+  @@unique([businessId, fromUnitId, toUnitId])
+  @@index([tenantId])
+}
+
+/// Configurable attribute definitions (industry modules add rows here; core billing never reads them)
+model ProductAttribute {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  businessId String   @db.Uuid
+  key        String
+  label      String
+  type       String
+  unit       String?
+  options    String[]
+
+  @@unique([businessId, key])
+  @@index([tenantId])
+}
+
+enum ProductType {
+  GOODS
+  SERVICE
+  BUNDLE
+}
+
+model Product {
+  id               String      @id @default(uuid()) @db.Uuid
+  tenantId         String      @db.Uuid
+  businessId       String      @db.Uuid
+  name             String
+  description      String?
+  type             ProductType @default(GOODS)
+  categoryId       String?     @db.Uuid
+  brand            String?
+  manufacturer     String?
+  hsnCode          String?
+  gstRate          Decimal     @default(0) @db.Decimal(5, 2)
+  cessRate         Decimal     @default(0) @db.Decimal(5, 2)
+  taxExempt        Boolean     @default(false)
+  priceIncludesTax Boolean     @default(true)
+  baseUnitId       String      @db.Uuid
+  trackInventory   Boolean     @default(true)
+  trackBatches     Boolean     @default(false)
+  supplierId       String?     @db.Uuid
+  imageUrl         String?
+  /// values for ProductAttribute definitions
+  attributes       Json        @default("{}")
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  category Category?        @relation(fields: [categoryId], references: [id])
+  baseUnit Unit             @relation(fields: [baseUnitId], references: [id])
+  supplier Supplier?        @relation(fields: [supplierId], references: [id])
+  variants ProductVariant[]
+  units    ProductUnit[]
+
+  @@index([tenantId])
+  @@index([businessId, name])
+  @@index([businessId, categoryId])
+}
+
+/// The sellable, stock-keeping item. Every product has at least one (default) variant.
+model ProductVariant {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  businessId     String   @db.Uuid
+  productId      String   @db.Uuid
+  /// "" for the default variant, otherwise e.g. "Vanilla / 500 ml"
+  name           String   @default("")
+  sku            String
+  productCode    String?
+  purchasePrice  Decimal  @default(0) @db.Decimal(14, 4)
+  sellingPrice   Decimal  @default(0) @db.Decimal(14, 4)
+  mrp            Decimal? @db.Decimal(14, 4)
+  wholesalePrice Decimal? @db.Decimal(14, 4)
+  /// weighted average cost per base unit, maintained on stock inward
+  avgCost        Decimal  @default(0) @db.Decimal(14, 4)
+  minStock       Decimal  @default(0) @db.Decimal(14, 4)
+  reorderLevel   Decimal  @default(0) @db.Decimal(14, 4)
+  attributes     Json     @default("{}")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product      Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  barcodes     Barcode[]
+  balances     InventoryBalance[]
+  bundleItems  BundleItem[]       @relation("BundleParent")
+  branchPrices BranchPrice[]
+
+  @@unique([businessId, sku])
+  @@index([tenantId])
+  @@index([productId])
+}
+
+model Barcode {
+  id         String @id @default(uuid()) @db.Uuid
+  tenantId   String @db.Uuid
+  businessId String @db.Uuid
+  variantId  String @db.Uuid
+  code       String
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, code])
+  @@index([tenantId])
+  @@index([variantId])
+}
+
+/// Alternate selling/purchase unit for one product: 1 <unit> = factorToBase <base unit>
+model ProductUnit {
+  id           String  @id @default(uuid()) @db.Uuid
+  tenantId     String  @db.Uuid
+  productId    String  @db.Uuid
+  unitId       String  @db.Uuid
+  factorToBase Decimal @db.Decimal(18, 6)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  unit    Unit    @relation(fields: [unitId], references: [id])
+
+  @@unique([productId, unitId])
+  @@index([tenantId])
+}
+
+model BundleItem {
+  id                 String  @id @default(uuid()) @db.Uuid
+  tenantId           String  @db.Uuid
+  bundleVariantId    String  @db.Uuid
+  componentVariantId String  @db.Uuid
+  quantity           Decimal @db.Decimal(14, 4)
+
+  bundle    ProductVariant @relation("BundleParent", fields: [bundleVariantId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleVariantId, componentVariantId])
+  @@index([tenantId])
+}
+
+model BranchPrice {
+  id           String  @id @default(uuid()) @db.Uuid
+  tenantId     String  @db.Uuid
+  branchId     String  @db.Uuid
+  variantId    String  @db.Uuid
+  sellingPrice Decimal @db.Decimal(14, 4)
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, variantId])
+  @@index([tenantId])
+}
+
+// ───────────── Inventory ─────────────
+
+model InventoryBalance {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  businessId  String   @db.Uuid
+  warehouseId String   @db.Uuid
+  variantId   String   @db.Uuid
+  quantity    Decimal  @default(0) @db.Decimal(14, 4)
+  reserved    Decimal  @default(0) @db.Decimal(14, 4)
+  updatedAt   DateTime @updatedAt
+
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([warehouseId, variantId])
+  @@index([tenantId])
+  @@index([businessId, variantId])
+}
+
+model Batch {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @db.Uuid
+  businessId  String    @db.Uuid
+  warehouseId String    @db.Uuid
+  variantId   String    @db.Uuid
+  batchNo     String
+  mfgDate     DateTime? @db.Date
+  expiryDate  DateTime? @db.Date
+  quantity    Decimal   @default(0) @db.Decimal(14, 4)
+  costPrice   Decimal   @default(0) @db.Decimal(14, 4)
+  createdAt   DateTime  @default(now())
+
+  @@unique([warehouseId, variantId, batchNo])
+  @@index([tenantId])
+  @@index([businessId, expiryDate])
+}
+
+enum StockMovementType {
+  OPENING
+  PURCHASE
+  SALE
+  SALE_CANCEL
+  SALE_RETURN
+  PURCHASE_RETURN
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT
+  DAMAGE
+  WASTAGE
+  STOCK_COUNT
+}
+
+/// Append-only ledger (UPDATE/DELETE blocked by trigger). Balance = sum of movements.
+model StockMovement {
+  id           String            @id @default(uuid()) @db.Uuid
+  tenantId     String            @db.Uuid
+  businessId   String            @db.Uuid
+  warehouseId  String            @db.Uuid
+  variantId    String            @db.Uuid
+  batchId      String?           @db.Uuid
+  type         StockMovementType
+  /// signed, in base unit
+  quantity     Decimal           @db.Decimal(14, 4)
+  balanceAfter Decimal           @db.Decimal(14, 4)
+  unitCost     Decimal           @default(0) @db.Decimal(14, 4)
+  refType      String
+  refId        String?           @db.Uuid
+  refNumber    String?
+  note         String?
+  userId       String            @db.Uuid
+  createdAt    DateTime          @default(now())
+
+  @@index([tenantId])
+  @@index([businessId, variantId, createdAt])
+  @@index([warehouseId, createdAt])
+  @@index([refType, refId])
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+model StockTransfer {
+  id              String         @id @default(uuid()) @db.Uuid
+  tenantId        String         @db.Uuid
+  businessId      String         @db.Uuid
+  number          String
+  fromWarehouseId String         @db.Uuid
+  toWarehouseId   String         @db.Uuid
+  status          TransferStatus @default(PENDING)
+  note            String?
+  requestedById   String         @db.Uuid
+  approvedById    String?        @db.Uuid
+  approvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+
+  items StockTransferItem[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+}
+
+model StockTransferItem {
+  id         String  @id @default(uuid()) @db.Uuid
+  tenantId   String  @db.Uuid
+  transferId String  @db.Uuid
+  variantId  String  @db.Uuid
+  quantity   Decimal @db.Decimal(14, 4)
+
+  transfer StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([transferId])
+}
+
+// ───────────── Parties ─────────────
+
+model Customer {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  businessId     String   @db.Uuid
+  name           String
+  phone          String?
+  email          String?
+  gstin          String?
+  stateCode      String?  @db.Char(2)
+  address        String?
+  type           String   @default("RETAIL")
+  groupName      String?
+  creditLimit    Decimal? @db.Decimal(14, 2)
+  creditDays     Int      @default(0)
+  openingBalance Decimal  @default(0) @db.Decimal(14, 2)
+  /// receivable: positive = customer owes us, negative = advance held
+  balance        Decimal  @default(0) @db.Decimal(14, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([businessId, name])
+  @@index([businessId, phone])
+}
+
+model Supplier {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  businessId     String   @db.Uuid
+  name           String
+  contactPerson  String?
+  phone          String?
+  email          String?
+  gstin          String?
+  stateCode      String?  @db.Char(2)
+  address        String?
+  openingBalance Decimal  @default(0) @db.Decimal(14, 2)
+  /// payable: positive = we owe the supplier
+  balance        Decimal  @default(0) @db.Decimal(14, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  products Product[]
+
+  @@index([tenantId])
+  @@index([businessId, name])
+}
+
+// ───────────── Sales ─────────────
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+model SalesInvoice {
+  id                   String        @id @default(uuid()) @db.Uuid
+  tenantId             String        @db.Uuid
+  businessId           String        @db.Uuid
+  branchId             String        @db.Uuid
+  warehouseId          String        @db.Uuid
+  /// assigned at issue; drafts have none
+  number               String?
+  fy                   String?
+  docType              String        @default("TAX_INVOICE")
+  status               InvoiceStatus @default(DRAFT)
+  invoiceDate          DateTime      @default(now())
+  dueDate              DateTime?
+  customerId           String?       @db.Uuid
+  customerName         String        @default("Walk-in customer")
+  customerPhone        String?
+  customerGstin        String?
+  customerAddress      String?
+  placeOfSupply        String        @db.Char(2)
+  supplyType           String
+  subTotal             Decimal       @db.Decimal(14, 2)
+  lineDiscountTotal    Decimal       @default(0) @db.Decimal(14, 2)
+  invoiceDiscountType  String?
+  invoiceDiscountValue Decimal?      @db.Decimal(14, 4)
+  invoiceDiscountTotal Decimal       @default(0) @db.Decimal(14, 2)
+  taxableTotal         Decimal       @db.Decimal(14, 2)
+  cgstTotal            Decimal       @default(0) @db.Decimal(14, 2)
+  sgstTotal            Decimal       @default(0) @db.Decimal(14, 2)
+  igstTotal            Decimal       @default(0) @db.Decimal(14, 2)
+  cessTotal            Decimal       @default(0) @db.Decimal(14, 2)
+  taxTotal             Decimal       @default(0) @db.Decimal(14, 2)
+  roundOff             Decimal       @default(0) @db.Decimal(14, 2)
+  grandTotal           Decimal       @db.Decimal(14, 2)
+  paidAmount           Decimal       @default(0) @db.Decimal(14, 2)
+  returnedAmount       Decimal       @default(0) @db.Decimal(14, 2)
+  paymentStatus        PaymentStatus @default(UNPAID)
+  notes                String?
+  /// client-generated key making invoice creation safe to retry (offline sync)
+  idempotencyKey       String?
+  /// unguessable token for the public share link
+  shareToken           String?       @unique
+  cancelledAt          DateTime?
+  cancelReason         String?
+  cancelledById        String?       @db.Uuid
+  createdById          String        @db.Uuid
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  items SalesInvoiceItem[]
+
+  @@unique([businessId, number])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId])
+  @@index([businessId, invoiceDate])
+  @@index([businessId, status, invoiceDate])
+  @@index([businessId, customerId])
+  @@index([branchId, invoiceDate])
+}
+
+model SalesInvoiceItem {
+  id                   String  @id @default(uuid()) @db.Uuid
+  tenantId             String  @db.Uuid
+  invoiceId            String  @db.Uuid
+  position             Int
+  variantId            String  @db.Uuid
+  description          String
+  hsnCode              String?
+  unitCode             String
+  /// base units per sold unit
+  unitFactor           Decimal @default(1) @db.Decimal(18, 6)
+  quantity             Decimal @db.Decimal(14, 4)
+  baseQuantity         Decimal @db.Decimal(14, 4)
+  unitPrice            Decimal @db.Decimal(14, 4)
+  priceIncludesTax     Boolean
+  discountType         String?
+  discountValue        Decimal? @db.Decimal(14, 4)
+  lineDiscount         Decimal @default(0) @db.Decimal(14, 2)
+  invoiceDiscountShare Decimal @default(0) @db.Decimal(14, 2)
+  taxableValue         Decimal @db.Decimal(14, 2)
+  gstRate              Decimal @db.Decimal(5, 2)
+  cessRate             Decimal @default(0) @db.Decimal(5, 2)
+  cgst                 Decimal @default(0) @db.Decimal(14, 2)
+  sgst                 Decimal @default(0) @db.Decimal(14, 2)
+  igst                 Decimal @default(0) @db.Decimal(14, 2)
+  cess                 Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal            Decimal @db.Decimal(14, 2)
+  /// cost per base unit captured at sale time (for gross profit)
+  costPrice            Decimal @default(0) @db.Decimal(14, 4)
+  batchId              String? @db.Uuid
+  /// in sold units
+  returnedQty          Decimal @default(0) @db.Decimal(14, 4)
+
+  invoice SalesInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@index([variantId])
+}
+
+/// A sales return; its number is the credit note number.
+model SalesReturn {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  businessId   String   @db.Uuid
+  branchId     String   @db.Uuid
+  warehouseId  String   @db.Uuid
+  number       String
+  fy           String
+  invoiceId    String   @db.Uuid
+  customerId   String?  @db.Uuid
+  returnDate   DateTime @default(now())
+  reason       String?
+  taxableTotal Decimal  @db.Decimal(14, 2)
+  cgstTotal    Decimal  @default(0) @db.Decimal(14, 2)
+  sgstTotal    Decimal  @default(0) @db.Decimal(14, 2)
+  igstTotal    Decimal  @default(0) @db.Decimal(14, 2)
+  cessTotal    Decimal  @default(0) @db.Decimal(14, 2)
+  total        Decimal  @db.Decimal(14, 2)
+  /// cash actually handed back; the rest reduces the customer's due / becomes store credit
+  refundAmount Decimal  @default(0) @db.Decimal(14, 2)
+  refundMode   String?
+  idempotencyKey String?
+  createdById  String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  items SalesReturnItem[]
+
+  @@unique([businessId, number])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@index([businessId, returnDate])
+}
+
+model SalesReturnItem {
+  id            String  @id @default(uuid()) @db.Uuid
+  tenantId      String  @db.Uuid
+  returnId      String  @db.Uuid
+  invoiceItemId String  @db.Uuid
+  variantId     String  @db.Uuid
+  description   String
+  hsnCode       String?
+  quantity      Decimal @db.Decimal(14, 4)
+  baseQuantity  Decimal @db.Decimal(14, 4)
+  /// GOOD items go back to sellable stock; DAMAGED are written off through the ledger
+  condition     String  @default("GOOD")
+  taxableValue  Decimal @db.Decimal(14, 2)
+  gstRate       Decimal @db.Decimal(5, 2)
+  cgst          Decimal @default(0) @db.Decimal(14, 2)
+  sgst          Decimal @default(0) @db.Decimal(14, 2)
+  igst          Decimal @default(0) @db.Decimal(14, 2)
+  cess          Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal     Decimal @db.Decimal(14, 2)
+  costPrice     Decimal @default(0) @db.Decimal(14, 4)
+
+  return SalesReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([returnId])
+}
+
+// ───────────── Purchasing ─────────────
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id           String              @id @default(uuid()) @db.Uuid
+  tenantId     String              @db.Uuid
+  businessId   String              @db.Uuid
+  branchId     String              @db.Uuid
+  number       String
+  supplierId   String              @db.Uuid
+  status       PurchaseOrderStatus @default(ORDERED)
+  orderDate    DateTime            @default(now())
+  expectedDate DateTime?
+  notes        String?
+  total        Decimal             @db.Decimal(14, 2)
+  createdById  String              @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  items PurchaseOrderItem[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+  @@index([businessId, supplierId])
+}
+
+model PurchaseOrderItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  tenantId        String  @db.Uuid
+  purchaseOrderId String  @db.Uuid
+  variantId       String  @db.Uuid
+  description     String
+  quantity        Decimal @db.Decimal(14, 4)
+  receivedQty     Decimal @default(0) @db.Decimal(14, 4)
+  unitCost        Decimal @db.Decimal(14, 4)
+  gstRate         Decimal @default(0) @db.Decimal(5, 2)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([purchaseOrderId])
+}
+
+/// Goods received note: the only purchasing document that moves stock in for PO-based flows.
+model GoodsReceipt {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @db.Uuid
+  businessId        String   @db.Uuid
+  number            String
+  purchaseOrderId   String?  @db.Uuid
+  supplierId        String   @db.Uuid
+  warehouseId       String   @db.Uuid
+  receivedDate      DateTime @default(now())
+  notes             String?
+  /// set once a purchase invoice has been booked against this receipt
+  purchaseInvoiceId String?  @db.Uuid
+  createdById       String   @db.Uuid
+  createdAt         DateTime @default(now())
+
+  items GoodsReceiptItem[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+  @@index([purchaseOrderId])
+}
+
+model GoodsReceiptItem {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @db.Uuid
+  goodsReceiptId String    @db.Uuid
+  poItemId       String?   @db.Uuid
+  variantId      String    @db.Uuid
+  quantity       Decimal   @db.Decimal(14, 4)
+  unitCost       Decimal   @db.Decimal(14, 4)
+  batchNo        String?
+  expiryDate     DateTime? @db.Date
+
+  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([goodsReceiptId])
+}
+
+model PurchaseInvoice {
+  id                String        @id @default(uuid()) @db.Uuid
+  tenantId          String        @db.Uuid
+  businessId        String        @db.Uuid
+  branchId          String        @db.Uuid
+  warehouseId       String        @db.Uuid
+  number            String
+  supplierInvoiceNo String?
+  supplierId        String        @db.Uuid
+  purchaseOrderId   String?       @db.Uuid
+  goodsReceiptId    String?       @db.Uuid
+  status            InvoiceStatus @default(ISSUED)
+  invoiceDate       DateTime      @default(now())
+  dueDate           DateTime?
+  supplyType        String
+  taxableTotal      Decimal       @db.Decimal(14, 2)
+  cgstTotal         Decimal       @default(0) @db.Decimal(14, 2)
+  sgstTotal         Decimal       @default(0) @db.Decimal(14, 2)
+  igstTotal         Decimal       @default(0) @db.Decimal(14, 2)
+  cessTotal         Decimal       @default(0) @db.Decimal(14, 2)
+  roundOff          Decimal       @default(0) @db.Decimal(14, 2)
+  grandTotal        Decimal       @db.Decimal(14, 2)
+  paidAmount        Decimal       @default(0) @db.Decimal(14, 2)
+  returnedAmount    Decimal       @default(0) @db.Decimal(14, 2)
+  paymentStatus     PaymentStatus @default(UNPAID)
+  notes             String?
+  createdById       String        @db.Uuid
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  items PurchaseInvoiceItem[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+  @@index([businessId, invoiceDate])
+  @@index([businessId, supplierId])
+}
+
+model PurchaseInvoiceItem {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  invoiceId    String    @db.Uuid
+  variantId    String    @db.Uuid
+  description  String
+  hsnCode      String?
+  /// base units
+  quantity     Decimal   @db.Decimal(14, 4)
+  unitCost     Decimal   @db.Decimal(14, 4)
+  taxableValue Decimal   @db.Decimal(14, 2)
+  gstRate      Decimal   @db.Decimal(5, 2)
+  cessRate     Decimal   @default(0) @db.Decimal(5, 2)
+  cgst         Decimal   @default(0) @db.Decimal(14, 2)
+  sgst         Decimal   @default(0) @db.Decimal(14, 2)
+  igst         Decimal   @default(0) @db.Decimal(14, 2)
+  cess         Decimal   @default(0) @db.Decimal(14, 2)
+  lineTotal    Decimal   @db.Decimal(14, 2)
+  batchNo      String?
+  expiryDate   DateTime? @db.Date
+  returnedQty  Decimal   @default(0) @db.Decimal(14, 4)
+
+  invoice PurchaseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@index([variantId])
+}
+
+/// A purchase return; its number is the debit note number.
+model PurchaseReturn {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  businessId   String   @db.Uuid
+  warehouseId  String   @db.Uuid
+  number       String
+  invoiceId    String   @db.Uuid
+  supplierId   String   @db.Uuid
+  returnDate   DateTime @default(now())
+  reason       String?
+  taxableTotal Decimal  @db.Decimal(14, 2)
+  taxTotal     Decimal  @default(0) @db.Decimal(14, 2)
+  total        Decimal  @db.Decimal(14, 2)
+  createdById  String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  items PurchaseReturnItem[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+  @@index([invoiceId])
+}
+
+model PurchaseReturnItem {
+  id            String  @id @default(uuid()) @db.Uuid
+  tenantId      String  @db.Uuid
+  returnId      String  @db.Uuid
+  invoiceItemId String  @db.Uuid
+  variantId     String  @db.Uuid
+  quantity      Decimal @db.Decimal(14, 4)
+  taxableValue  Decimal @db.Decimal(14, 2)
+  taxAmount     Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal     Decimal @db.Decimal(14, 2)
+
+  return PurchaseReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([returnId])
+}
+
+// ───────────── Money movement ─────────────
+
+enum PaymentDirection {
+  IN
+  OUT
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+  CHEQUE
+}
+
+model Payment {
+  id          String           @id @default(uuid()) @db.Uuid
+  tenantId    String           @db.Uuid
+  businessId  String           @db.Uuid
+  branchId    String           @db.Uuid
+  number      String
+  direction   PaymentDirection
+  /// RECEIPT | REFUND | SUPPLIER_PAYMENT | SUPPLIER_REFUND
+  kind        String
+  mode        PaymentMode
+  amount      Decimal          @db.Decimal(14, 2)
+  paymentDate DateTime         @default(now())
+  customerId  String?          @db.Uuid
+  supplierId  String?          @db.Uuid
+  reference   String?
+  note        String?
+  createdById String           @db.Uuid
+  createdAt   DateTime         @default(now())
+
+  allocations PaymentAllocation[]
+
+  @@unique([businessId, number])
+  @@index([tenantId])
+  @@index([businessId, paymentDate])
+  @@index([businessId, customerId])
+  @@index([businessId, supplierId])
+}
+
+/// Links a payment to the document(s) it settles. Unallocated remainder is an advance on account.
+model PaymentAllocation {
+  id                String  @id @default(uuid()) @db.Uuid
+  tenantId          String  @db.Uuid
+  paymentId         String  @db.Uuid
+  salesInvoiceId    String? @db.Uuid
+  purchaseInvoiceId String? @db.Uuid
+  salesReturnId     String? @db.Uuid
+  amount            Decimal @db.Decimal(14, 2)
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([paymentId])
+  @@index([salesInvoiceId])
+  @@index([purchaseInvoiceId])
+}
+
+model ExpenseCategory {
+  id         String @id @default(uuid()) @db.Uuid
+  tenantId   String @db.Uuid
+  businessId String @db.Uuid
+  name       String
+
+  expenses Expense[]
+
+  @@unique([businessId, name])
+  @@index([tenantId])
+}
+
+model Expense {
+  id          String      @id @default(uuid()) @db.Uuid
+  tenantId    String      @db.Uuid
+  businessId  String      @db.Uuid
+  branchId    String      @db.Uuid
+  categoryId  String      @db.Uuid
+  amount      Decimal     @db.Decimal(14, 2)
+  expenseDate DateTime    @default(now())
+  mode        PaymentMode @default(CASH)
+  payee       String?
+  note        String?
+  /// expenses are voided, never deleted
+  voidedAt    DateTime?
+  createdById String      @db.Uuid
+  createdAt   DateTime    @default(now())
+
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([tenantId])
+  @@index([businessId, expenseDate])
+}
+
+model CashSession {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  businessId   String    @db.Uuid
+  branchId     String    @db.Uuid
+  status       String    @default("OPEN")
+  openedAt     DateTime  @default(now())
+  openedById   String    @db.Uuid
+  openingCash  Decimal   @db.Decimal(14, 2)
+  closedAt     DateTime?
+  closedById   String?   @db.Uuid
+  expectedCash Decimal?  @db.Decimal(14, 2)
+  countedCash  Decimal?  @db.Decimal(14, 2)
+  difference   Decimal?  @db.Decimal(14, 2)
+  note         String?
+
+  @@index([tenantId])
+  @@index([branchId, status])
+}
+
+// ───────────── Cross-cutting ─────────────
+
+/// Append-only (UPDATE/DELETE blocked by trigger).
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  businessId String?  @db.Uuid
+  userId     String   @db.Uuid
+  action     String
+  entity     String
+  entityId   String?
+  summary    String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entity, entityId])
+}
+
+model Notification {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @db.Uuid
+  businessId String    @db.Uuid
+  type       String
+  title      String
+  body       String
+  entity     String?
+  entityId   String?
+  /// prevents the same alert being raised repeatedly
+  dedupeKey  String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([businessId, dedupeKey])
+  @@index([tenantId])
+  @@index([businessId, readAt, createdAt])
+}

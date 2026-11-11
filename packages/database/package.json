@@ -1,0 +1,17 @@
+{
+  "name": "@nexbill/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": { "@prisma/client": "^6.1.0" },
+  "devDependencies": { "prisma": "^6.1.0", "tsx": "^4.19.2", "typescript": "^5.6.3", "@types/node": "^22.10.2" }
+}
