@@ -1,0 +1,12 @@
+{
+  "name": "NEXBILL – Billing & POS",
+  "short_name": "NEXBILL",
+  "description": "Billing, POS, inventory and GST for Indian businesses",
+  "start_url": "/pos",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#0d6e62",
+  "lang": "en-IN",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

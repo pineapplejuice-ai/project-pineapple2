@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", "Segoe UI", "Noto Sans", system-ui, sans-serif;
+  --bg: 247 248 250; --surface: 255 255 255; --raised: 255 255 255; --line: 228 231 236;
+  --ink: 16 24 40; --muted: 82 94 112; --faint: 138 148 166;
+  --brand: 13 110 98; --brand-fg: 255 255 255; --brand-soft: 224 243 240;
+  --ok: 4 120 87; --warn: 180 83 9; --bad: 190 30 45;
+}
+.dark {
+  --bg: 11 14 19; --surface: 18 22 29; --raised: 26 31 40; --line: 39 46 58;
+  --ink: 236 239 244; --muted: 160 170 186; --faint: 108 119 138;
+  --brand: 45 190 170; --brand-fg: 5 22 20; --brand-soft: 16 48 45;
+  --ok: 52 211 153; --warn: 251 191 36; --bad: 248 113 113;
+}
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+body { @apply bg-bg text-ink antialiased; font-family: var(--font-sans); font-feature-settings: "cv11", "ss01"; }
+* { @apply border-line; }
+:focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 1px; }
+.num { font-variant-numeric: tabular-nums; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 8px; border: 2px solid rgb(var(--bg)); }
+
+/* Printing: only the invoice sheet is printed; the page size comes from the chosen template. */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .no-print, nav, aside, header { display: none !important; }
+  .print-sheet { box-shadow: none !important; border: 0 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; color: #000 !important; background: #fff !important; }
+  main { padding: 0 !important; margin: 0 !important; }
+}
