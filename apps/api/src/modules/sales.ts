@@ -9,7 +9,7 @@ import { randomBytes } from 'node:crypto';
 import type { z } from 'zod';
 import { config } from '../config';
 import { AuditService, MessagingService, SequenceService } from '../common/core.services';
-import { assertBranchAccess, assertCan, Can, Ctx, CurrentCtx, Public } from '../common/context';
+import { assertBranchAccess, branchScope, assertCan, Can, Ctx, CurrentCtx, Public } from '../common/context';
 import { dateRange, page, skipTake } from '../common/http';
 import { PrismaService, Tx } from '../common/prisma.service';
 import { ApiZod, ZBody, ZQuery } from '../common/zod';
@@ -26,6 +26,7 @@ export class SalesService {
   async detail(tx: Tx, ctx: Ctx, id: string) {
     const invoice = await tx.salesInvoice.findFirst({ where: { id, businessId: ctx.businessId }, include: { items: { orderBy: { position: 'asc' } } } });
     if (!invoice) throw new NotFoundException('Invoice not found');
+    if (ctx.branchIds?.length) assertBranchAccess(ctx, invoice.branchId);
     const [business, branch, allocations, returns] = await Promise.all([
       tx.business.findUniqueOrThrow({ where: { id: invoice.businessId } }),
       tx.branch.findUniqueOrThrow({ where: { id: invoice.branchId } }),
@@ -341,7 +342,7 @@ export class SalesController {
     return this.prisma.tenantTx(ctx.tenantId, async (tx) => {
       const where: Prisma.SalesInvoiceWhereInput = {
         businessId: ctx.businessId, invoiceDate: dateRange(q.from, q.to), customerId: customerId || undefined,
-        branchId: q.branchId ?? (ctx.branchIds.length ? { in: ctx.branchIds } : undefined),
+        branchId: branchScope(ctx, q.branchId),
         status: (['DRAFT', 'ISSUED', 'CANCELLED'].includes(q.status ?? '') ? q.status : undefined) as 'ISSUED' | undefined,
         paymentStatus: (['UNPAID', 'PARTIAL', 'PAID'].includes(payStatus ?? '') ? payStatus : undefined) as 'PAID' | undefined,
         ...(q.q ? { OR: [{ number: { contains: q.q, mode: 'insensitive' } }, { customerName: { contains: q.q, mode: 'insensitive' } }, { customerPhone: { contains: q.q } }] } : {}),

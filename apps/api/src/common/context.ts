@@ -33,3 +33,9 @@ export function assertBranchAccess(ctx: Ctx, branchId: string): void {
   if (ctx.branchIds.length > 0 && !ctx.branchIds.includes(branchId))
     throw new ForbiddenException('You do not have access to this branch');
 }
+
+/** Prisma filter for branch-scoped lists: honours an explicit branch only if the member may see it. */
+export function branchScope(ctx: Ctx, requested?: string | null): string | { in: string[] } | undefined {
+  if (requested) { assertBranchAccess(ctx, requested); return requested; }
+  return ctx.branchIds.length ? { in: ctx.branchIds } : undefined;
+}

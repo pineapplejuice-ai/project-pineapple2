@@ -6,7 +6,7 @@ import { cashCloseSchema, cashOpenSchema, expenseCategorySchema, expenseSchema, 
 import Decimal from 'decimal.js';
 import type { z } from 'zod';
 import { AuditService, NotificationService, SequenceService } from '../common/core.services';
-import { assertBranchAccess, Can, Ctx, CurrentCtx } from '../common/context';
+import { assertBranchAccess, branchScope, Can, Ctx, CurrentCtx } from '../common/context';
 import { dateRange, page, skipTake } from '../common/http';
 import { PrismaService, Tx } from '../common/prisma.service';
 import { ApiZod, ZBody, ZQuery } from '../common/zod';
@@ -27,7 +27,7 @@ export class PaymentsController {
   list(@CurrentCtx() ctx: Ctx, @ZQuery(listQuery) q: ListQuery, @Query('direction') direction?: string) {
     return this.prisma.tenantTx(ctx.tenantId, async (tx) => {
       const where: Prisma.PaymentWhereInput = { businessId: ctx.businessId, paymentDate: dateRange(q.from, q.to), direction: direction === 'IN' || direction === 'OUT' ? direction : undefined,
-        branchId: q.branchId ?? (ctx.branchIds.length ? { in: ctx.branchIds } : undefined), ...(q.q ? { OR: [{ number: { contains: q.q, mode: 'insensitive' } }, { reference: { contains: q.q, mode: 'insensitive' } }] } : {}) };
+        branchId: branchScope(ctx, q.branchId), ...(q.q ? { OR: [{ number: { contains: q.q, mode: 'insensitive' } }, { reference: { contains: q.q, mode: 'insensitive' } }] } : {}) };
       const [rows, total] = await Promise.all([tx.payment.findMany({ where, orderBy: [{ paymentDate: 'desc' }, { createdAt: 'desc' }], ...skipTake(q) }), tx.payment.count({ where })]);
       const [cs, ss] = await Promise.all([
         tx.customer.findMany({ where: { id: { in: rows.flatMap((r) => (r.customerId ? [r.customerId] : [])) } }, select: { id: true, name: true } }),
@@ -130,7 +130,7 @@ export class PaymentsController {
   @Get('expenses') @Can('expenses.view')
   expenses(@CurrentCtx() ctx: Ctx, @ZQuery(listQuery) q: ListQuery) {
     return this.prisma.tenantTx(ctx.tenantId, async (tx) => {
-      const where: Prisma.ExpenseWhereInput = { businessId: ctx.businessId, expenseDate: dateRange(q.from, q.to), branchId: q.branchId ?? (ctx.branchIds.length ? { in: ctx.branchIds } : undefined),
+      const where: Prisma.ExpenseWhereInput = { businessId: ctx.businessId, expenseDate: dateRange(q.from, q.to), branchId: branchScope(ctx, q.branchId),
         ...(q.q ? { OR: [{ payee: { contains: q.q, mode: 'insensitive' } }, { note: { contains: q.q, mode: 'insensitive' } }] } : {}) };
       const [rows, total, sum] = await Promise.all([
         tx.expense.findMany({ where, include: { category: { select: { name: true } } }, orderBy: [{ expenseDate: 'desc' }, { createdAt: 'desc' }], ...skipTake(q) }),

@@ -22,6 +22,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       body = { message: `A record with the same ${String((e.meta?.target as string[] | undefined)?.filter((t) => !/tenantId|businessId/.test(t)).join(', ') || 'value')} already exists` };
     } else if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
       status = HttpStatus.NOT_FOUND; body = { message: 'Record not found' };
+    } else if ((e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2023') || e instanceof Prisma.PrismaClientValidationError) {
+      status = HttpStatus.BAD_REQUEST; body = { message: 'Invalid identifier or value in the request' };
     } else if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003') {
       status = HttpStatus.CONFLICT; body = { message: 'This record is in use and cannot be changed that way' };
     }

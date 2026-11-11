@@ -161,6 +161,19 @@ describe('permissions are enforced on the server', () => {
     expect((await api.call('post', '/sales/invoices', viewer, bill(shop, [line]))).status).toBe(403);
     expect((await api.call('post', '/inventory/adjust', viewer, { warehouseId: shop.warehouseId, variantId: product.variantId, quantity: 5, type: 'ADJUSTMENT', note: 'nope' })).status).toBe(403);
 
+    // branch restrictions: a member limited to one branch cannot read or bill in another
+    const branch2 = (await api.call('post', '/branches', shop.token, { name: 'Second Branch', code: 'B2' })).body;
+    const email = `branchuser_${Date.now()}@example.com`;
+    await api.call('post', '/staff', shop.token, { name: 'Branch Cashier', email, password: 'Staffpass123', roleId: roles.find((x) => x.systemKey === 'BILLING_OPERATOR')!.id, branchIds: [branch2.id] });
+    const limited = (await api.call('post', '/auth/login', undefined, { email, password: 'Staffpass123' })).body.accessToken as string;
+    expect((await api.call('get', '/sales/invoices', limited)).body.total).toBe(0);
+    expect((await api.call('get', `/sales/invoices?branchId=${shop.branchId}`, limited)).status).toBe(403);
+    expect((await api.call('get', `/sales/invoices/${sale.body.id}`, limited)).status).toBe(403);
+    expect((await api.call('get', `/payments?branchId=${shop.branchId}`, limited)).status).toBe(403);
+    expect((await api.call('post', '/sales/invoices', limited, bill(shop, [line], { payments: [{ mode: 'CASH', amount: 236 }] }))).status).toBe(403);
+    expect((await api.call('get', `/dashboard?branchId=${shop.branchId}`, viewer)).status).toBe(200);
+    expect((await api.call('get', '/inventory/movements?variantId=not-a-uuid', shop.token)).status).toBe(400);
+
     // staff cannot escalate: a cashier cannot manage roles, the owner role cannot be assigned
     expect((await api.call('post', '/staff', shop.token, { name: 'Second Owner', email: 'o2@example.com', password: 'Staffpass123', roleId: roles.find((x) => x.systemKey === 'OWNER')!.id })).status).toBe(403);
   });
