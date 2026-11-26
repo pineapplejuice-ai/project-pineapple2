@@ -1,0 +1,1955 @@
+{
+ "brands": [
+  {
+   "id": "maruti-suzuki",
+   "name": "Maruti Suzuki",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "maruti-suzuki-alto-k10",
+     "name": "Alto K10",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-s-presso",
+     "name": "S-Presso",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-celerio",
+     "name": "Celerio",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-wagon-r",
+     "name": "Wagon R",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-swift",
+     "name": "Swift",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-dzire",
+     "name": "Dzire",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-baleno",
+     "name": "Baleno",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-ignis",
+     "name": "Ignis",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-fronx",
+     "name": "Fronx",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-brezza",
+     "name": "Brezza",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-ertiga",
+     "name": "Ertiga",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-xl6",
+     "name": "XL6",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-grand-vitara",
+     "name": "Grand Vitara",
+     "fuels": [
+      "PETROL",
+      "CNG",
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-jimny",
+     "name": "Jimny",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-ciaz",
+     "name": "Ciaz",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-invicto",
+     "name": "Invicto",
+     "fuels": [
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-evitara",
+     "name": "eVitara",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "maruti-suzuki-eeco",
+     "name": "Eeco",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hyundai",
+   "name": "Hyundai",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "hyundai-grand-i10-nios",
+     "name": "Grand i10 Nios",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "hyundai-i20",
+     "name": "i20",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hyundai-aura",
+     "name": "Aura",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "hyundai-exter",
+     "name": "Exter",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "hyundai-venue",
+     "name": "Venue",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "hyundai-verna",
+     "name": "Verna",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hyundai-creta",
+     "name": "Creta",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "hyundai-creta-electric",
+     "name": "Creta Electric",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "hyundai-alcazar",
+     "name": "Alcazar",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "hyundai-tucson",
+     "name": "Tucson",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "hyundai-ioniq-5",
+     "name": "Ioniq 5",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tata",
+   "name": "Tata",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "tata-tiago",
+     "name": "Tiago",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "tata-tiago-ev",
+     "name": "Tiago EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-tigor",
+     "name": "Tigor",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "tata-tigor-ev",
+     "name": "Tigor EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-altroz",
+     "name": "Altroz",
+     "fuels": [
+      "PETROL",
+      "DIESEL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "tata-punch",
+     "name": "Punch",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "tata-punch-ev",
+     "name": "Punch EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-nexon",
+     "name": "Nexon",
+     "fuels": [
+      "PETROL",
+      "DIESEL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "tata-nexon-ev",
+     "name": "Nexon EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-curvv",
+     "name": "Curvv",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "tata-curvv-ev",
+     "name": "Curvv EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-harrier",
+     "name": "Harrier",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "tata-harrier-ev",
+     "name": "Harrier EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tata-safari",
+     "name": "Safari",
+     "fuels": [
+      "DIESEL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mahindra",
+   "name": "Mahindra",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "mahindra-thar",
+     "name": "Thar",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-thar-roxx",
+     "name": "Thar Roxx",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-scorpio-n",
+     "name": "Scorpio N",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-scorpio-classic",
+     "name": "Scorpio Classic",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-xuv-3xo",
+     "name": "XUV 3XO",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-xuv700",
+     "name": "XUV700",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-bolero",
+     "name": "Bolero",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-bolero-neo",
+     "name": "Bolero Neo",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mahindra-xuv400",
+     "name": "XUV400",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "mahindra-be-6",
+     "name": "BE 6",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "mahindra-xev-9e",
+     "name": "XEV 9e",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kia",
+   "name": "Kia",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "kia-sonet",
+     "name": "Sonet",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "kia-seltos",
+     "name": "Seltos",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "kia-carens",
+     "name": "Carens",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "kia-syros",
+     "name": "Syros",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "kia-carnival",
+     "name": "Carnival",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "kia-ev6",
+     "name": "EV6",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "kia-ev9",
+     "name": "EV9",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "toyota",
+   "name": "Toyota",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "toyota-glanza",
+     "name": "Glanza",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "toyota-urban-cruiser-taisor",
+     "name": "Urban Cruiser Taisor",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "toyota-urban-cruiser-hyryder",
+     "name": "Urban Cruiser Hyryder",
+     "fuels": [
+      "PETROL",
+      "CNG",
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "toyota-rumion",
+     "name": "Rumion",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "toyota-innova-crysta",
+     "name": "Innova Crysta",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "toyota-innova-hycross",
+     "name": "Innova Hycross",
+     "fuels": [
+      "PETROL",
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "toyota-fortuner",
+     "name": "Fortuner",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "toyota-hilux",
+     "name": "Hilux",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "toyota-camry",
+     "name": "Camry",
+     "fuels": [
+      "HYBRID"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "honda",
+   "name": "Honda",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "honda-amaze",
+     "name": "Amaze",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-city",
+     "name": "City",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-city-e-hev",
+     "name": "City e:HEV",
+     "fuels": [
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "honda-elevate",
+     "name": "Elevate",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mg",
+   "name": "MG",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "mg-comet-ev",
+     "name": "Comet EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "mg-windsor-ev",
+     "name": "Windsor EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "mg-zs-ev",
+     "name": "ZS EV",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "mg-astor",
+     "name": "Astor",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "mg-hector",
+     "name": "Hector",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mg-gloster",
+     "name": "Gloster",
+     "fuels": [
+      "DIESEL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "skoda",
+   "name": "Skoda",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "skoda-kylaq",
+     "name": "Kylaq",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "skoda-kushaq",
+     "name": "Kushaq",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "skoda-slavia",
+     "name": "Slavia",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "skoda-kodiaq",
+     "name": "Kodiaq",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "volkswagen",
+   "name": "Volkswagen",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "volkswagen-taigun",
+     "name": "Taigun",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "volkswagen-virtus",
+     "name": "Virtus",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "volkswagen-tiguan",
+     "name": "Tiguan",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "renault",
+   "name": "Renault",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "renault-kwid",
+     "name": "Kwid",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "renault-triber",
+     "name": "Triber",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "renault-kiger",
+     "name": "Kiger",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "nissan",
+   "name": "Nissan",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "nissan-magnite",
+     "name": "Magnite",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "citroen",
+   "name": "Citroen",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "citroen-c3",
+     "name": "C3",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "citroen-ec3",
+     "name": "eC3",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "citroen-basalt",
+     "name": "Basalt",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "citroen-c3-aircross",
+     "name": "C3 Aircross",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "jeep",
+   "name": "Jeep",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "jeep-compass",
+     "name": "Compass",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "jeep-meridian",
+     "name": "Meridian",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "jeep-wrangler",
+     "name": "Wrangler",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "byd",
+   "name": "BYD",
+   "type": "CAR",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "byd-atto-3",
+     "name": "Atto 3",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "byd-seal",
+     "name": "Seal",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "byd-emax-7",
+     "name": "eMAX 7",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "byd-sealion-7",
+     "name": "Sealion 7",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bmw",
+   "name": "BMW",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "bmw-3-series",
+     "name": "3 Series",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "bmw-5-series",
+     "name": "5 Series",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "bmw-x1",
+     "name": "X1",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "bmw-x5",
+     "name": "X5",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "bmw-ix1",
+     "name": "iX1",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "bmw-i4",
+     "name": "i4",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mercedes-benz",
+   "name": "Mercedes-Benz",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "mercedes-benz-a-class-limousine",
+     "name": "A-Class Limousine",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mercedes-benz-c-class",
+     "name": "C-Class",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mercedes-benz-e-class",
+     "name": "E-Class",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mercedes-benz-gla",
+     "name": "GLA",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mercedes-benz-glc",
+     "name": "GLC",
+     "fuels": [
+      "PETROL",
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "mercedes-benz-eqs",
+     "name": "EQS",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "audi",
+   "name": "Audi",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "audi-a4",
+     "name": "A4",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "audi-a6",
+     "name": "A6",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "audi-q3",
+     "name": "Q3",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "audi-q5",
+     "name": "Q5",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "audi-q8-e-tron",
+     "name": "Q8 e-tron",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "volvo",
+   "name": "Volvo",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "volvo-xc40-recharge",
+     "name": "XC40 Recharge",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "volvo-xc60",
+     "name": "XC60",
+     "fuels": [
+      "HYBRID"
+     ]
+    },
+    {
+     "id": "volvo-xc90",
+     "name": "XC90",
+     "fuels": [
+      "HYBRID"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "force",
+   "name": "Force Motors",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "force-gurkha",
+     "name": "Gurkha",
+     "fuels": [
+      "DIESEL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "isuzu",
+   "name": "Isuzu",
+   "type": "CAR",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "isuzu-d-max-v-cross",
+     "name": "D-Max V-Cross",
+     "fuels": [
+      "DIESEL"
+     ]
+    },
+    {
+     "id": "isuzu-mu-x",
+     "name": "MU-X",
+     "fuels": [
+      "DIESEL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hero",
+   "name": "Hero",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "hero-splendor-plus",
+     "name": "Splendor Plus",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-hf-deluxe",
+     "name": "HF Deluxe",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-passion-plus",
+     "name": "Passion Plus",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-glamour",
+     "name": "Glamour",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-super-splendor",
+     "name": "Super Splendor",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-xtreme-125r",
+     "name": "Xtreme 125R",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-xtreme-160r",
+     "name": "Xtreme 160R",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-xpulse-200-4v",
+     "name": "Xpulse 200 4V",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-mavrick-440",
+     "name": "Mavrick 440",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-destini-125",
+     "name": "Destini 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-xoom-110",
+     "name": "Xoom 110",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "hero-pleasure-plus",
+     "name": "Pleasure Plus",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "honda-2w",
+   "name": "Honda",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "honda-2w-activa-6g",
+     "name": "Activa 6G",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-activa-125",
+     "name": "Activa 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-activa-e",
+     "name": "Activa e:",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "honda-2w-dio",
+     "name": "Dio",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-shine-100",
+     "name": "Shine 100",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-shine-125",
+     "name": "Shine 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-sp-125",
+     "name": "SP 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-unicorn",
+     "name": "Unicorn",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-hornet-2-0",
+     "name": "Hornet 2.0",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-cb350",
+     "name": "CB350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "honda-2w-hness-cb350",
+     "name": "Hness CB350",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bajaj",
+   "name": "Bajaj",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "bajaj-platina-100",
+     "name": "Platina 100",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-ct-110x",
+     "name": "CT 110X",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-pulsar-125",
+     "name": "Pulsar 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-pulsar-n160",
+     "name": "Pulsar N160",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-pulsar-ns200",
+     "name": "Pulsar NS200",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-pulsar-n250",
+     "name": "Pulsar N250",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-avenger-220",
+     "name": "Avenger 220",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-dominar-400",
+     "name": "Dominar 400",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "bajaj-freedom-125",
+     "name": "Freedom 125",
+     "fuels": [
+      "PETROL",
+      "CNG"
+     ]
+    },
+    {
+     "id": "bajaj-chetak",
+     "name": "Chetak",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tvs",
+   "name": "TVS",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "tvs-jupiter",
+     "name": "Jupiter",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-jupiter-125",
+     "name": "Jupiter 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-ntorq-125",
+     "name": "NTorq 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-xl100",
+     "name": "XL100",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-raider-125",
+     "name": "Raider 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-apache-rtr-160",
+     "name": "Apache RTR 160",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-apache-rtr-200-4v",
+     "name": "Apache RTR 200 4V",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-apache-rr-310",
+     "name": "Apache RR 310",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-ronin",
+     "name": "Ronin",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "tvs-iqube",
+     "name": "iQube",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "tvs-radeon",
+     "name": "Radeon",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "royal-enfield",
+   "name": "Royal Enfield",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "royal-enfield-classic-350",
+     "name": "Classic 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-bullet-350",
+     "name": "Bullet 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-hunter-350",
+     "name": "Hunter 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-meteor-350",
+     "name": "Meteor 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-goan-classic-350",
+     "name": "Goan Classic 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-himalayan-450",
+     "name": "Himalayan 450",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-guerrilla-450",
+     "name": "Guerrilla 450",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-scram-440",
+     "name": "Scram 440",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-interceptor-650",
+     "name": "Interceptor 650",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-continental-gt-650",
+     "name": "Continental GT 650",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "royal-enfield-super-meteor-650",
+     "name": "Super Meteor 650",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "yamaha",
+   "name": "Yamaha",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "yamaha-fz-s-fi",
+     "name": "FZ-S Fi",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-fz-x",
+     "name": "FZ-X",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-mt-15",
+     "name": "MT-15",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-r15-v4",
+     "name": "R15 V4",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-fascino-125",
+     "name": "Fascino 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-rayzr-125",
+     "name": "RayZR 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "yamaha-aerox-155",
+     "name": "Aerox 155",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "suzuki-2w",
+   "name": "Suzuki",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "suzuki-2w-access-125",
+     "name": "Access 125",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "suzuki-2w-burgman-street",
+     "name": "Burgman Street",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "suzuki-2w-avenis",
+     "name": "Avenis",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "suzuki-2w-gixxer",
+     "name": "Gixxer",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "suzuki-2w-gixxer-sf-250",
+     "name": "Gixxer SF 250",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "suzuki-2w-v-strom-sx",
+     "name": "V-Strom SX",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ktm",
+   "name": "KTM",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "ktm-125-duke",
+     "name": "125 Duke",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "ktm-200-duke",
+     "name": "200 Duke",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "ktm-250-duke",
+     "name": "250 Duke",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "ktm-390-duke",
+     "name": "390 Duke",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "ktm-rc-390",
+     "name": "RC 390",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "ktm-390-adventure",
+     "name": "390 Adventure",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "jawa-yezdi",
+   "name": "Jawa / Yezdi",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "jawa-yezdi-jawa-42",
+     "name": "Jawa 42",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "jawa-yezdi-jawa-350",
+     "name": "Jawa 350",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "jawa-yezdi-perak",
+     "name": "Perak",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "jawa-yezdi-yezdi-roadster",
+     "name": "Yezdi Roadster",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "jawa-yezdi-yezdi-adventure",
+     "name": "Yezdi Adventure",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "triumph",
+   "name": "Triumph",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "triumph-speed-400",
+     "name": "Speed 400",
+     "fuels": [
+      "PETROL"
+     ]
+    },
+    {
+     "id": "triumph-scrambler-400-x",
+     "name": "Scrambler 400 X",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "harley-davidson",
+   "name": "Harley-Davidson",
+   "type": "BIKE",
+   "evOnly": false,
+   "models": [
+    {
+     "id": "harley-davidson-x440",
+     "name": "X440",
+     "fuels": [
+      "PETROL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ather",
+   "name": "Ather",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "ather-rizta",
+     "name": "Rizta",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ather-450s",
+     "name": "450S",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ather-450x",
+     "name": "450X",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ather-450-apex",
+     "name": "450 Apex",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ola-electric",
+   "name": "Ola Electric",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "ola-electric-s1-x",
+     "name": "S1 X",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ola-electric-s1-air",
+     "name": "S1 Air",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ola-electric-s1-pro",
+     "name": "S1 Pro",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "ola-electric-roadster-x",
+     "name": "Roadster X",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "revolt",
+   "name": "Revolt",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "revolt-rv400",
+     "name": "RV400",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "revolt-rv1",
+     "name": "RV1",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ultraviolette",
+   "name": "Ultraviolette",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "ultraviolette-f77-mach-2",
+     "name": "F77 Mach 2",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "simple-energy",
+   "name": "Simple Energy",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "simple-energy-simple-one",
+     "name": "Simple One",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "okinawa",
+   "name": "Okinawa",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "okinawa-praise-pro",
+     "name": "Praise Pro",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "okinawa-ipraise",
+     "name": "iPraise+",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hero-electric",
+   "name": "Hero Electric",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "hero-electric-optima-cx",
+     "name": "Optima CX",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "hero-electric-photon",
+     "name": "Photon",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "vida",
+   "name": "Vida (Hero)",
+   "type": "BIKE",
+   "evOnly": true,
+   "models": [
+    {
+     "id": "vida-v2-plus",
+     "name": "V2 Plus",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    },
+    {
+     "id": "vida-v2-pro",
+     "name": "V2 Pro",
+     "fuels": [
+      "ELECTRIC"
+     ]
+    }
+   ]
+  }
+ ]
+}
