@@ -25,9 +25,12 @@ import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 const val CHANNEL_BOOKINGS = "booking_updates"
@@ -123,5 +126,21 @@ class AutoBridgeMessagingService : FirebaseMessagingService() {
         val body = message.notification?.body ?: message.data["body"].orEmpty()
         AndroidBookingNotifier.createChannel(this)
         AndroidBookingNotifier.show(this, (message.data["bookingId"] ?: title).hashCode(), title, body, message.data["bookingId"])
+    }
+}
+
+/** Real mode: stores the device's FCM token on users/{uid} whenever someone signs in (the Cloud Function reads it). */
+class PushTokenSync @Inject constructor(
+    private val auth: AuthRepository,
+    private val tokens: PushTokenRepository,
+) {
+    fun start(scope: CoroutineScope) {
+        scope.launch {
+            auth.currentUser.map { it?.id }.distinctUntilChanged().collect { uid ->
+                if (uid == null) return@collect
+                runCatching { com.google.firebase.messaging.FirebaseMessaging.getInstance().token.await() }
+                    .onSuccess { token -> tokens.saveToken(uid, token) }
+            }
+        }
     }
 }

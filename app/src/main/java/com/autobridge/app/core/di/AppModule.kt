@@ -27,19 +27,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ApplicationScope
-
-enum class AppMode { DEMO, FIREBASE }
-
-/** What is switched on. Real integrations only switch on when their config exists. */
-data class AppConfig(val mode: AppMode, val placesEnabled: Boolean, val versionName: String) {
-    val isDemo: Boolean get() = mode == AppMode.DEMO
-}
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -60,11 +48,11 @@ object AppModule {
 
     @Provides @Singleton fun clock(): Clock = SystemClock()
     @Provides @Singleton fun pricing(): PricingEngine = PricingEngine()
-    @Provides @Singleton fun bookingFactory(p: PricingEngine) = BookingFactory(p)
-    @Provides @Singleton fun bookingActions(p: PricingEngine) = BookingActions(p)
-    @Provides @Singleton fun partnerSearch() = PartnerSearch()
+    @Provides @Singleton fun bookingFactory(p: PricingEngine): BookingFactory = BookingFactory(p)
+    @Provides @Singleton fun bookingActions(p: PricingEngine): BookingActions = BookingActions(p)
+    @Provides @Singleton fun partnerSearch(): PartnerSearch = PartnerSearch()
 
-    private fun db() = FirebaseFirestore.getInstance()
+    private fun db(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
     @Provides @Singleton
     fun auth(cfg: AppConfig, kv: KeyValueStore, activity: ActivityProvider, @ApplicationScope scope: CoroutineScope): AuthRepository =

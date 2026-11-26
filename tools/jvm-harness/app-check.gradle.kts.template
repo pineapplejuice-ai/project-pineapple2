@@ -1,0 +1,39 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+}
+java { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
+val app = "__ROOT__/app/src/main/java"
+sourceSets {
+    main {
+        kotlin.srcDir(app)
+        kotlin.exclude("**/core/data/firebase/**", "**/core/platform/**", "**/core/di/AppModule.kt", "**/MainActivity.kt", "**/AutoBridgeApp.kt")
+        kotlin.srcDir("stubs")
+        kotlin.srcDir("gen")
+    }
+}
+val cmp = "1.6.2"
+dependencies {
+    implementation(project(":core:data"))
+    implementation("org.jetbrains.compose.runtime:runtime-desktop:$cmp")
+    implementation("org.jetbrains.compose.runtime:runtime-saveable-desktop:$cmp")
+    implementation("org.jetbrains.compose.ui:ui-desktop:$cmp")
+    implementation("org.jetbrains.compose.foundation:foundation-desktop:$cmp")
+    implementation("org.jetbrains.compose.material3:material3-desktop:$cmp")
+    implementation("org.jetbrains.compose.material:material-icons-extended-desktop:$cmp")
+    implementation(libs.kotlinx.serialization.json)
+    implementation("javax.inject:javax.inject:1")
+    compileOnly(files("__ANDROID_JAR__"))
+}
+sourceSets { test { kotlin.srcDir("__ROOT__/app/src/test/java") } }
+dependencies {
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(files("__ANDROID_JAR__"))
+}
+tasks.test { workingDir = file("__ROOT__/app") }
+configurations.named("testRuntimeClasspath") { exclude(group = "androidx.collection"); exclude(group = "androidx.annotation") }

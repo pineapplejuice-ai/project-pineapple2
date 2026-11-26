@@ -99,10 +99,11 @@ fun AutoBridgeRoot(pendingBookingId: String?, onPendingBookingHandled: () -> Uni
     }
 }
 
-private fun NavHostController.navigateToTab(route: String) = navigate(route) {
-    popUpTo(graph.findStartDestination().id) { saveState = true }
+/** Switches bottom tab. [restore] = false opens the tab fresh (e.g. Explore with a new category from Home). */
+private fun NavHostController.navigateToTab(route: String, restore: Boolean = true) = navigate(route) {
+    popUpTo(graph.findStartDestination().id) { saveState = restore }
     launchSingleTop = true
-    restoreState = true
+    restoreState = restore
 }
 
 @Composable
@@ -123,7 +124,7 @@ private fun AppNavHost(nav: NavHostController, area: AppArea, modifier: Modifier
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenPartner = { nav.navigate(Routes.partner(it)) },
-                onOpenCategory = { nav.navigateToTab(Routes.explore(it.name)) },
+                onOpenCategory = { nav.navigateToTab(Routes.explore(it.name), restore = false) },
                 onOpenExplore = { nav.navigateToTab(Routes.explore()) },
                 onAddVehicle = { nav.navigate(Routes.ADD_VEHICLE) },
                 onOpenAddresses = { nav.navigate(Routes.ADDRESSES) },

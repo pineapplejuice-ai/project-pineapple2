@@ -22,6 +22,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -94,7 +95,7 @@ class ViewModelTests {
             SavedStateHandle(mapOf("partnerId" to "demo-p01")), auth, vehicles, addresses, partners, bookings,
             PassThroughPhotoUploader(), BookingFactory(pricing), PartnerSearch(), clock,
         )
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         assertThat(vm.state.value.step).isEqualTo(BookingStep.SERVICE)
 
         // Can't continue without a package or issue.
@@ -126,7 +127,7 @@ class ViewModelTests {
             SavedStateHandle(mapOf("partnerId" to "demo-p01")), auth, vehicles, addresses, partners, bookings,
             PassThroughPhotoUploader(), BookingFactory(pricing), PartnerSearch(), clock,
         )
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         vm.selectTripType(TripType.DROP_ONLY)
         vm.next() // service optional for drop only
         assertThat(vm.state.value.step).isEqualTo(BookingStep.TRIP)
@@ -141,7 +142,7 @@ class ViewModelTests {
         signIn(UserRole.RIDER)
         val bookings = DemoBookingRepository(store, clock, actions, backgroundScope)
         val vm = JobViewModel(SavedStateHandle(mapOf("bookingId" to "AB-DEMO05")), auth, bookings, DemoRiderRepository(), actions, PassThroughPhotoUploader(), clock)
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         assertThat(vm.state.value.next).isEqualTo(BookingStatus.PICKUP_EN_ROUTE)
         vm.advance()
         assertThat(bookings.observeBooking("AB-DEMO05").first()!!.status).isEqualTo(BookingStatus.PICKUP_EN_ROUTE)
@@ -157,7 +158,7 @@ class ViewModelTests {
         signIn(UserRole.PARTNER)
         val bookings = DemoBookingRepository(store, clock, actions, backgroundScope)
         val vm = JobViewModel(SavedStateHandle(mapOf("bookingId" to "AB-DEMO03")), auth, bookings, DemoRiderRepository(), actions, PassThroughPhotoUploader(), clock)
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         assertThat(vm.state.value.canShareEstimate).isTrue()
         val line = vm.state.value.estimateDraft.first()
         vm.onEstimateLine(line.id, description = "Dent removal", amount = "1500")
@@ -171,7 +172,7 @@ class ViewModelTests {
         signIn()
         val settings = DemoSettingsRepository(store)
         val vm = ProfileViewModel(auth, settings, AppConfig(AppMode.DEMO, false, "0.1.0"))
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         repeat(6) { vm.onVersionTapped() }
         assertThat(vm.state.value.roleSwitcherUnlocked).isFalse()
         vm.onVersionTapped()
@@ -186,7 +187,7 @@ class ViewModelTests {
             SavedStateHandle(mapOf("category" to "DETAILING")), partners, vehicles, addresses, DemoFavouritesRepository(store),
             DisabledPlacesSuggestionRepository(), DemoShopRequestRepository(store), auth, PartnerSearch(), clock,
         )
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         val results = vm.state.value.results
         assertThat(results).isNotEmpty()
         results.forEach { assertThat(it.partner.categories).contains(PartnerCategory.DETAILING) }
