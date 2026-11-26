@@ -1,0 +1,12 @@
+<resources>
+    <string name="explore_title">Explore near %1$s</string>
+    <string name="explore_search_hint">Search shops, services, areas</string>
+    <string name="explore_radius">%1$d km</string>
+    <string name="explore_verified">Verified</string>
+    <string name="explore_fits_vehicle">Fits %1$s</string>
+    <string name="explore_count">%1$d partners</string>
+    <string name="explore_suggestions">More shops nearby</string>
+    <string name="explore_suggestions_body">From Google Places. These shops are not yet on AutoBridge and can\'t be booked. Request them and we\'ll try to onboard them.</string>
+    <string name="explore_request_shop">Request this shop</string>
+    <string name="explore_requested">Requested ✓</string>
+</resources>

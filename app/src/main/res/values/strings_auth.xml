@@ -1,0 +1,12 @@
+<resources>
+    <string name="login_tagline">Car &amp; bike care near you, with doorstep pickup and drop.</string>
+    <string name="login_phone">Mobile number</string>
+    <string name="login_send_otp">Send OTP</string>
+    <string name="login_otp_sent">Enter the 6-digit code sent to +91 %1$s</string>
+    <string name="login_otp">OTP</string>
+    <string name="login_demo_otp_hint">Demo mode: use 123456</string>
+    <string name="login_verify">Verify &amp; continue</string>
+    <string name="login_change_number">Change number</string>
+    <string name="login_name_title">What should we call you?</string>
+    <string name="login_name">Your name</string>
+</resources>

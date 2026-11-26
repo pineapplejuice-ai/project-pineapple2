@@ -1,0 +1,19 @@
+<resources>
+    <string name="rider_title">Today\'s jobs</string>
+    <string name="rider_not_linked">This account isn\'t linked to a rider profile</string>
+    <string name="rider_no_jobs">No jobs assigned</string>
+    <string name="rider_no_jobs_body">Ops will assign pickups and drops to you here.</string>
+    <string name="rider_today">Today (%1$d)</string>
+    <string name="rider_upcoming">Upcoming</string>
+    <string name="rider_next">Next: %1$s</string>
+    <string name="ops_title">Ops console</string>
+    <string name="ops_tab_bookings">Bookings</string>
+    <string name="ops_tab_partners">Partners</string>
+    <string name="ops_tab_requests">Shop requests</string>
+    <string name="ops_needs_rider">Needs a rider (%1$d)</string>
+    <string name="ops_all_active">All active (%1$d)</string>
+    <string name="ops_partner_meta">%1$s · commission %2$s%%</string>
+    <string name="ops_set_commission">Set commission</string>
+    <string name="ops_no_requests">No shop requests</string>
+    <string name="ops_no_requests_body">Customers can request shops that aren\'t on AutoBridge yet from Explore (needs PLACES_API_KEY).</string>
+</resources>

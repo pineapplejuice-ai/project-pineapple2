@@ -95,6 +95,14 @@ class BookingEngineTest {
         assertThat(b.status).isEqualTo(IN_SERVICE)
     }
 
+    @Test fun emptyEstimateCanBeApproved() {
+        var b = create(draft(pkgType = PriceType.FROM)).copy(status = AT_WORKSHOP)
+        b = actions.shareEstimate(b, emptyList(), "No extra work needed", 2)!!
+        b = actions.approveAll(b, 3)!!
+        assertThat(b.status).isEqualTo(IN_SERVICE)
+        assertThat(b.price.total).isEqualTo(500 + 249)
+    }
+
     @Test fun cancellationFeeOnlyAfterRiderAssigned() {
         val b = create()
         assertThat(actions.cancel(b, "Plans changed", 2)!!.cancellation!!.fee).isEqualTo(0)

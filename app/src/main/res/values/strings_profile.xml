@@ -1,0 +1,11 @@
+<resources>
+    <string name="profile_role_switcher">Demo role switcher</string>
+    <string name="profile_role_switcher_body">Switch between customer, partner, rider and ops modes. In real mode the role comes from the Firebase custom claim.</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_version">Version %1$s</string>
+    <string name="profile_mode_demo">Demo mode (no Firebase config)</string>
+    <string name="profile_mode_firebase">Connected to Firebase</string>
+    <string name="profile_places_on">Google Places suggestions: on</string>
+    <string name="profile_places_off">Google Places suggestions: off (no PLACES_API_KEY)</string>
+    <string name="profile_taps_left">%1$d more taps to unlock the role switcher</string>
+</resources>

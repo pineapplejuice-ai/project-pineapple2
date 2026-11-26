@@ -1,0 +1,16 @@
+<resources>
+    <string name="home_greeting">Hi %1$s 👋</string>
+    <string name="home_greeting_anon">Hi there 👋</string>
+    <string name="home_ongoing">Ongoing booking</string>
+    <string name="home_reminder_title">%1$s: service due</string>
+    <string name="home_reminder_overdue">Overdue by %1$d days. Book a pickup in a few taps.</string>
+    <string name="home_reminder_soon">Due in the next few days.</string>
+    <string name="home_reminder_unknown">Add the last service date for accurate reminders.</string>
+    <string name="home_categories">What does your ride need?</string>
+    <string name="home_brand_centres">Your %1$s service centres</string>
+    <string name="home_best_detailing">Best detailing near you</string>
+    <string name="home_popular_packages">Popular packages</string>
+    <string name="home_best_near_you">Best near you</string>
+    <string name="explore_empty_title">No partners found</string>
+    <string name="explore_empty_body">Try a bigger radius, another category or a different location.</string>
+</resources>

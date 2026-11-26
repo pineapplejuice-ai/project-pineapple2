@@ -1,0 +1,105 @@
+rules_version = '2';
+
+// AutoBridge Firestore security rules.
+// Roles come from the Firebase Auth custom claim `role` (partner | rider | ops). Partners also carry `partnerId`,
+// riders `riderId` (defaults to their uid). Customers have no role claim.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    // Missing fields/claims are read with get(key, default): the client omits null fields.
+    function role() { return signedIn() ? request.auth.token.get('role', 'customer') : 'anonymous'; }
+    function isOps() { return role() == 'ops'; }
+    function isPartnerFor(partnerId) { return role() == 'partner' && request.auth.token.get('partnerId', '') == partnerId; }
+    function riderId() { return request.auth.token.get('riderId', request.auth.uid); }
+    function isRiderFor(booking) { return role() == 'rider' && booking.get('riderId', '') == riderId(); }
+    function changedKeys() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function onlyChanges(keys) { return changedKeys().hasOnly(keys); }
+    function unchanged(keys) { return !changedKeys().hasAny(keys); }
+
+    // ---- Users: private profile, vehicles, addresses, favourites, FCM tokens ----
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if isOps();
+      match /{sub=**} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // ---- Partners: public catalogue. Firestore is the source of truth; only isPartner docs can take bookings. ----
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow create, delete: if isOps();
+      // Partners can edit their own listing (hours, description, photos) but not trust/commercial fields.
+      allow update: if isOps() ||
+        (isPartnerFor(partnerId) && unchanged(['verified', 'isPartner', 'commissionPercent', 'rating', 'reviewCount',
+                                               'googleRating', 'googleReviewCount', 'source', 'id']));
+      match /reviews/{reviewId} {
+        allow read: if true;
+        // Reviews are written by the Cloud Function from booking ratings (Admin SDK bypasses rules).
+        allow write: if isOps();
+      }
+    }
+
+    match /packages/{packageId} {
+      allow read: if true;
+      allow create: if isOps() || isPartnerFor(request.resource.data.partnerId);
+      allow update, delete: if isOps() || (isPartnerFor(resource.data.partnerId) &&
+        (request.resource == null || request.resource.data.partnerId == resource.data.partnerId));
+    }
+
+    match /riders/{riderDocId} {
+      allow read: if isOps() || (role() == 'rider' && riderDocId == riderId());
+      allow write: if isOps();
+    }
+
+    // Public per-slot counters maintained by the Cloud Function (customers can't read other people's bookings).
+    match /slotCounts/{id} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // ---- Bookings ----
+    match /bookings/{bookingId} {
+      allow read: if signedIn() && (
+        resource.data.customerId == request.auth.uid ||
+        isPartnerFor(resource.data.partnerId) ||
+        isRiderFor(resource.data) ||
+        isOps());
+
+      // Customers create their own REQUESTED bookings. Commission is snapshotted by the client from the partner doc;
+      // the Cloud Function re-validates it against partners/{id}.commissionPercent.
+      allow create: if signedIn()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'REQUESTED'
+        && request.resource.data.get('riderId', null) == null
+        && get(/databases/$(database)/documents/partners/$(request.resource.data.partnerId)).data.isPartner == true;
+
+      // Customer: cancel, reschedule, approve estimate lines, rate. Never touches commission, rider or partner data.
+      allow update: if signedIn() && resource.data.customerId == request.auth.uid
+        && request.resource.data.customerId == resource.data.customerId
+        && unchanged(['commissionPercent', 'riderId', 'riderName', 'riderPhone', 'partner', 'partnerId', 'walkaround', 'checklist'])
+        && request.resource.data.status in ['REQUESTED', 'CONFIRMED', 'READY', 'ESTIMATE_SHARED', 'IN_SERVICE', 'CANCELLED', 'COMPLETED', resource.data.status];
+
+      // Partner: accept/decline, estimate, start service, ready, collected (pickup only). Cannot change commission/rider.
+      allow update: if isPartnerFor(resource.data.partnerId)
+        && unchanged(['customerId', 'commissionPercent', 'riderId', 'riderName', 'riderPhone', 'partnerId', 'ratings', 'walkaround'])
+        && request.resource.data.status in ['CONFIRMED', 'DECLINED', 'ESTIMATE_SHARED', 'IN_SERVICE', 'READY', 'COMPLETED', resource.data.status];
+
+      // Rider: progress their own trips, walkaround photos and handover checklist only.
+      allow update: if isRiderFor(resource.data)
+        && onlyChanges(['status', 'history', 'walkaround', 'checklist', 'updatedAtMillis', 'active'])
+        && request.resource.data.status in ['PICKUP_EN_ROUTE', 'PICKED_UP', 'AT_WORKSHOP', 'DROP_EN_ROUTE', 'COMPLETED', resource.data.status];
+
+      // Ops: assign riders, override status, fix data.
+      allow update: if isOps();
+      allow delete: if false;
+    }
+
+    // ---- "Request this shop" leads ----
+    match /shopRequests/{id} {
+      allow create: if signedIn() && request.resource.data.requestedBy == request.auth.uid && request.resource.data.status == 'NEW';
+      allow read, update, delete: if isOps();
+    }
+  }
+}

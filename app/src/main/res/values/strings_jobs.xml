@@ -1,0 +1,32 @@
+<resources>
+    <string name="job_need_walkaround">Take all walkaround photos first</string>
+    <string name="job_need_checklist">Go through every checklist item with the advisor first</string>
+    <string name="job_estimate_invalid">Each estimate line needs a description and an amount</string>
+    <string name="job_accept">Accept booking</string>
+    <string name="job_decline">Decline</string>
+    <string name="job_mark">Mark: %1$s</string>
+    <string name="job_waiting">Waiting for: %1$s</string>
+    <string name="job_estimate_pending">Pending</string>
+    <string name="job_commission">Internal · commission %1$s%% = %2$s (not shown to the customer)</string>
+    <string name="job_customer">Customer: %1$s</string>
+    <string name="job_partner">Partner: %1$s</string>
+    <string name="job_call_customer">Call customer</string>
+    <string name="job_open_maps">Open in Maps</string>
+    <string name="job_walkaround_body">Photograph every angle in good light. These protect the customer, the partner and you.</string>
+    <string name="job_take_photo">Take %1$s photo</string>
+    <string name="job_demo_photos">Fill with demo photos</string>
+    <string name="job_checklist_title">Handover checklist</string>
+    <string name="job_checklist_body">Go through each item with the service advisor before handing over the keys.</string>
+    <string name="job_reported_by_customer">Reported by customer</string>
+    <string name="job_estimate_title">Estimate &amp; extras</string>
+    <string name="job_estimate_required">This booking needs an estimate. Add the extra items (or none) and share it with the customer for line-by-line approval.</string>
+    <string name="job_estimate_optional">Fixed-price package. Only add lines if extra work is needed; otherwise start the service.</string>
+    <string name="job_estimate_item">Item</string>
+    <string name="job_estimate_add_line">Add line</string>
+    <string name="job_estimate_note">Note to customer</string>
+    <string name="job_estimate_share">Share estimate with customer</string>
+    <string name="ops_controls">Ops controls</string>
+    <string name="ops_assign_rider">Assign rider</string>
+    <string name="ops_reassign_rider">Rider: %1$s (change)</string>
+    <string name="ops_override_status">Override status</string>
+</resources>

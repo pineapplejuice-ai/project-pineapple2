@@ -1,0 +1,8 @@
+# Copy to local.properties (never commit it).
+sdk.dir=/path/to/Android/sdk
+
+# Optional: Google Places API (New) key. Enables "Not yet on AutoBridge" suggestions + "Request this shop" in Explore.
+# PLACES_API_KEY=AIza...
+
+# Optional: reserved for a future Maps SDK screen (manifest placeholder ${mapsApiKey}).
+# MAPS_API_KEY=AIza...

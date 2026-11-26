@@ -1,3 +1,121 @@
 <resources>
     <string name="app_name">AutoBridge</string>
+    <string name="demo_badge">DEMO</string>
+    <string name="demo_mode_banner">Demo mode · all partners, prices and reviews are fake</string>
+    <string name="offline_banner">You\'re offline. Showing saved data.</string>
+    <string name="back">Back</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="done">Done</string>
+    <string name="next">Next</string>
+    <string name="continue_label">Continue</string>
+    <string name="see_all">See all</string>
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="search">Search</string>
+    <string name="clear">Clear</string>
+    <string name="call">Call</string>
+    <string name="whatsapp">WhatsApp</string>
+    <string name="directions">Directions</string>
+    <string name="favourite_add">Add to favourites</string>
+    <string name="favourite_remove">Remove from favourites</string>
+
+    <string name="cat_authorised">Authorised service</string>
+    <string name="cat_garage">Multi-brand garage</string>
+    <string name="cat_detailing">Detailing</string>
+    <string name="cat_wash">Car wash</string>
+    <string name="cat_tyres">Tyres &amp; wheels</string>
+    <string name="cat_battery">Battery</string>
+    <string name="cat_ev">EV service</string>
+
+    <string name="status_requested">Booking requested</string>
+    <string name="status_confirmed">Confirmed by partner</string>
+    <string name="status_rider_assigned">Rider assigned</string>
+    <string name="status_pickup_en_route">Rider on the way</string>
+    <string name="status_picked_up">Vehicle picked up</string>
+    <string name="status_at_workshop">At the workshop</string>
+    <string name="status_estimate_shared">Estimate ready for approval</string>
+    <string name="status_in_service">Service in progress</string>
+    <string name="status_ready">Ready for delivery</string>
+    <string name="status_ready_collect">Ready for collection</string>
+    <string name="status_drop_en_route">Out for delivery</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_collected">Collected</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_declined">Declined by partner</string>
+
+    <string name="trip_pickup_drop">Pickup &amp; drop</string>
+    <string name="trip_pickup_only">Pickup only</string>
+    <string name="trip_drop_only">Drop only</string>
+    <string name="trip_pickup_drop_desc">Our rider collects your vehicle and brings it back after the service.</string>
+    <string name="trip_pickup_only_desc">Our rider takes your vehicle to the partner. You collect it.</string>
+    <string name="trip_drop_only_desc">Your vehicle is already at the partner. Our rider brings it back.</string>
+
+    <string name="fuel_petrol">Petrol</string>
+    <string name="fuel_diesel">Diesel</string>
+    <string name="fuel_cng">CNG</string>
+    <string name="fuel_electric">Electric</string>
+    <string name="fuel_hybrid">Hybrid</string>
+    <string name="vehicle_car">Car</string>
+    <string name="vehicle_bike">Bike / scooter</string>
+
+    <string name="address_home">Home</string>
+    <string name="address_work">Work</string>
+    <string name="address_other">Other</string>
+
+    <string name="sort_best">Best near you</string>
+    <string name="sort_nearest">Nearest</string>
+    <string name="sort_rating">Top rated</string>
+    <string name="sort_price">Price: low to high</string>
+
+    <string name="angle_front">Front</string>
+    <string name="angle_rear">Rear</string>
+    <string name="angle_left">Left side</string>
+    <string name="angle_right">Right side</string>
+    <string name="angle_odometer">Odometer / dashboard</string>
+    <string name="stage_pickup_customer">Pickup walkaround</string>
+    <string name="stage_pickup_workshop">Workshop pickup walkaround</string>
+    <string name="stage_drop_customer">Delivery walkaround</string>
+
+    <string name="price_service">Service package</string>
+    <string name="price_service_from">Service package (starting price)</string>
+    <string name="price_logistics">Rider pickup &amp; drop</string>
+    <string name="price_extra_km">Extra distance</string>
+    <string name="price_early_slot">Early slot (8–10 AM)</string>
+    <string name="price_extras">Approved extras</string>
+    <string name="price_cancel_fee">Cancellation fee</string>
+    <string name="price_total">Total</string>
+    <string name="price_total_estimate">Estimated total</string>
+    <string name="price_estimate_note">Final service amount is confirmed after inspection. You approve every extra line before work starts.</string>
+    <string name="price_breakdown">Price breakdown</string>
+    <string name="price_extra_km_qty">%1$d km</string>
+    <string name="price_legs_qty">%1$d way(s)</string>
+
+    <string name="err_no_vehicle">Pick a vehicle</string>
+    <string name="err_no_partner">Pick a partner</string>
+    <string name="err_partner_not_bookable">This shop isn\'t on AutoBridge yet</string>
+    <string name="err_partner_incompatible">This partner doesn\'t service your vehicle</string>
+    <string name="err_no_service">Choose a package or describe an issue</string>
+    <string name="err_too_many_photos">Up to 3 photos</string>
+    <string name="err_no_pickup">Choose a pickup address</string>
+    <string name="err_no_drop">Choose a drop address</string>
+    <string name="err_no_job_card">Enter the job card number from the workshop</string>
+    <string name="err_no_slot">Pick a date and time slot</string>
+    <string name="err_slot_full">That slot is full</string>
+    <string name="err_slot_past">That slot has already started</string>
+
+    <string name="reg_err_empty">Enter the registration number</string>
+    <string name="reg_err_format">Use a format like KA 01 AB 1234 or 22 BH 1234 AB</string>
+    <string name="reg_err_state">Unknown state code</string>
+    <string name="reg_err_zero">Number can\'t be 0000</string>
+
+    <string name="role_customer">Customer</string>
+    <string name="role_partner">Partner</string>
+    <string name="role_rider">Rider</string>
+    <string name="role_ops">Ops</string>
+
+    <string name="notif_channel_bookings">Booking updates</string>
+    <string name="notif_booking_body">%1$s · %2$s</string>
 </resources>

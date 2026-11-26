@@ -1,0 +1,17 @@
+<resources>
+    <string name="partner_book_pickup">Book with pickup</string>
+    <string name="partner_not_found">Partner not found</string>
+    <string name="partner_photo">Partner photo</string>
+    <string name="partner_rating_source">AutoBridge rating from customers who booked here</string>
+    <string name="partner_incompatible">This partner doesn\'t service your %1$s. Switch vehicle on Home or pick another partner.</string>
+    <string name="partner_packages">Packages</string>
+    <string name="partner_no_packages">No packages for your vehicle yet. You can still book and describe the issue.</string>
+    <string name="partner_hours">Opening hours</string>
+    <string name="partner_closed">Closed</string>
+    <string name="partner_open_24h">Open 24 hours</string>
+    <string name="partner_reviews">Reviews</string>
+    <string name="partner_no_reviews">No reviews yet.</string>
+    <string name="favourites_title">Favourites</string>
+    <string name="favourites_empty_title">No favourites yet</string>
+    <string name="favourites_empty_body">Tap the heart on a partner to save it here.</string>
+</resources>

@@ -1,0 +1,22 @@
+<resources>
+    <string name="location_current">Current location</string>
+    <string name="location_choose">Choose a location</string>
+    <string name="location_use_current">Use current location</string>
+    <string name="location_use_current_body">We only ask for permission when you tap this</string>
+    <string name="location_saved">Saved addresses</string>
+    <string name="location_localities">Popular areas</string>
+    <string name="location_denied">Location permission denied. Pick a saved address or area instead.</string>
+    <string name="location_unavailable">Couldn\'t get your location. Pick a saved address or area instead.</string>
+    <string name="location_set">Set location</string>
+    <string name="addresses_title">Saved addresses</string>
+    <string name="addresses_empty_title">No saved addresses</string>
+    <string name="addresses_empty_body">Save Home and Work for faster pickups.</string>
+    <string name="address_add">Add address</string>
+    <string name="address_custom_label">Label (e.g. Mom\'s place)</string>
+    <string name="address_line1">Flat / house no., building, street</string>
+    <string name="address_area">Area / locality</string>
+    <string name="address_landmark">Landmark (optional)</string>
+    <string name="address_pin">Pin the location</string>
+    <string name="address_pinned">Pinned: %1$s</string>
+    <string name="address_pin_required">Use current location or pick an area to pin this address</string>
+</resources>

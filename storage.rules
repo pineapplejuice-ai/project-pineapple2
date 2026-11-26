@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Booking photos (customer issue photos, rider walkaround photos). Readable by any signed-in participant;
+    // fine-grained checks happen on the booking document that references them.
+    match /bookings/{bookingId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

@@ -1,0 +1,17 @@
+<resources>
+    <string name="rating_cd">Rated %1$s out of 5 from %2$d reviews</string>
+    <string name="rating_new">New on AutoBridge</string>
+    <string name="google_rating">Google rating %1$s (%2$s)</string>
+    <string name="stars_cd">%1$d stars</string>
+    <string name="open_now">Open now</string>
+    <string name="closed_now">Closed</string>
+    <string name="verified">Verified partner</string>
+    <string name="not_on_autobridge">Not yet on AutoBridge</string>
+    <string name="from_price">from %1$s</string>
+    <string name="all">All</string>
+    <string name="popular">Popular</string>
+    <string name="fixed_price">Fixed price</string>
+    <string name="final_after_inspection">Final price after inspection</string>
+    <string name="selected">Selected</string>
+    <string name="book">Book</string>
+</resources>

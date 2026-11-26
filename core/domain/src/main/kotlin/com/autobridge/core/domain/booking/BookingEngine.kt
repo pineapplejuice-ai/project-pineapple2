@@ -187,6 +187,10 @@ class BookingActions(private val pricing: PricingEngine) {
         if (!BookingRules.canApproveEstimate(b)) return null
         var cur: Booking = b
         b.estimate!!.lines.filter { it.approved == null }.forEach { cur = decideEstimateLine(cur, it.id, true, now) ?: return null }
+        // An estimate with no extra lines (e.g. "from" price confirmed as-is) is approved in one tap.
+        if (cur.status == BookingStatus.ESTIMATE_SHARED) {
+            cur = pricing.repriceWithEstimate(cur).withStatus(BookingStatus.IN_SERVICE, Actor.CUSTOMER, now, "Estimate approved")
+        }
         return cur
     }
 

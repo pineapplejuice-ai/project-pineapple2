@@ -1,0 +1,37 @@
+<resources>
+    <string name="book_title">Book a service</string>
+    <string name="book_step_of">Step %1$d of %2$d · %3$s</string>
+    <string name="step_vehicle">Vehicle</string>
+    <string name="step_partner">Partner</string>
+    <string name="step_service">Service &amp; issues</string>
+    <string name="step_trip">Pickup &amp; drop</string>
+    <string name="step_slot">Date &amp; time</string>
+    <string name="step_review">Review</string>
+    <string name="book_confirm">Confirm booking</string>
+    <string name="book_failed">Couldn\'t place the booking. Please try again.</string>
+    <string name="book_choose_package">Choose a package (optional)</string>
+    <string name="book_drop_only_service_note">Drop only: the service is already running at the partner, so package and issues are optional.</string>
+    <string name="book_issues">Anything else we should check?</string>
+    <string name="book_notes">Notes for the partner</string>
+    <string name="book_photos">Photos (%1$d/%2$d)</string>
+    <string name="book_photo_cd">Attached photo</string>
+    <string name="book_add_photo">Add photo</string>
+    <string name="book_pickup_from">Pickup from</string>
+    <string name="book_drop_to">Drop to</string>
+    <string name="book_job_card">Job card number</string>
+    <string name="book_job_card_hint">Printed on the workshop\'s job card / service receipt</string>
+    <string name="book_pick_day">Pick a day</string>
+    <string name="book_pick_slot">Pick a pickup slot</string>
+    <string name="book_slot_full">Full</string>
+    <string name="book_slot_past">Started</string>
+    <string name="book_slot_note">The 8–10 AM slot has a ₹30 early-slot surcharge.</string>
+    <string name="book_pickup_short">Pickup: %1$s</string>
+    <string name="book_drop_short">Drop: %1$s</string>
+    <string name="book_job_card_short">Job card: %1$s</string>
+    <string name="book_trust_title">How we keep your vehicle safe</string>
+    <string name="book_trust_walkaround">📸 Photo walkaround at every handover</string>
+    <string name="book_trust_checklist">✅ Your issues are checked off with the service advisor</string>
+    <string name="book_trust_estimate">🧾 Approve every extra line before work starts</string>
+    <string name="select">Select</string>
+    <string name="edit">Edit</string>
+</resources>

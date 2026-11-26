@@ -1,0 +1,23 @@
+<resources>
+    <string name="partner_tab_bookings">Bookings</string>
+    <string name="partner_tab_packages">Packages</string>
+    <string name="partner_tab_hours">Hours</string>
+    <string name="partner_tab_earnings">Earnings</string>
+    <string name="partner_not_linked">No partner linked</string>
+    <string name="partner_not_linked_body">Ask AutoBridge ops to link your account to your shop (custom claim partnerId).</string>
+    <string name="partner_new_requests">New requests (%1$d)</string>
+    <string name="partner_no_requests">No new requests right now.</string>
+    <string name="partner_active">In progress (%1$d)</string>
+    <string name="partner_add_package">Add package</string>
+    <string name="partner_package">Package</string>
+    <string name="partner_package_name">Name</string>
+    <string name="partner_package_price">Price (₹)</string>
+    <string name="partner_from_price">\"From\" price (final after estimate)</string>
+    <string name="partner_hours_open">Opens at %1$s</string>
+    <string name="partner_hours_close">Closes at %1$s</string>
+    <string name="partner_hours_closed_on">Closed on</string>
+    <string name="partner_earnings_net">%1$s net earnings</string>
+    <string name="partner_earnings_detail">%1$d completed jobs · %2$s service value · %3$s commission</string>
+    <string name="partner_commission_rate">Commission rate: %1$s%%</string>
+    <string name="partner_no_completed">No completed jobs yet</string>
+</resources>

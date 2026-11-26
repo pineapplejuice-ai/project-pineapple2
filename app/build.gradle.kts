@@ -32,6 +32,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // App version label is tapped 7 times in demo mode to unlock the role switcher.
         vectorDrawables { useSupportLibrary = true }
 
         buildConfigField("String", "PLACES_API_KEY", "\"${localProp("PLACES_API_KEY")}\"")
@@ -69,6 +70,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:data"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
