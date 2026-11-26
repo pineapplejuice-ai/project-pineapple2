@@ -49,9 +49,7 @@ No `google-services.json`, no keys → demo mode automatically. All demo data is
    a rider is assigned), call/WhatsApp partner & rider, Book again; rate after completion (AB-DEMO01 is completed).
 8. **Role switching:** Profile → tap the **Version** row 7 times → Demo role switcher → Partner / Rider / Ops / Customer.
    - **Partner** (Demo Shine Detailing – Koramangala): Bookings tab → AB-DEMO02 → Accept/Decline; AB-DEMO03 (at
-     workshop, "from" price) → add estimate lines → Share estimate. Switch back to Customer? No – AB-DEMO03 belongs to a
-     demo customer; to try approval yourself, book Shine Detailing with a "from" package, then progress it via Ops/Rider/Partner.
-     Packages / Hours / Earnings tabs.
+     workshop, "from" price) → add estimate lines → Share estimate. Packages / Hours / Earnings tabs.
    - **Rider** (Demo Rider Ravi): AB-DEMO05 → "Mark: Rider on the way" → walkaround (take photos or "Fill with demo
      photos") → "Vehicle picked up" → handover checklist → "At the workshop" …
    - **Ops:** needs-a-rider list (AB-DEMO04) → assign rider, override status; Partners tab (verify, commission);
