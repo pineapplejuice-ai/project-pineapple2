@@ -144,8 +144,8 @@ fun PackageCard(pkg: ServicePackage, onSelect: (() -> Unit)?, modifier: Modifier
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(pkg.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    if (pkg.popular) { Spacer(Modifier.width(6.dp)); InfoPill(stringResource(R.string.popular)) }
+                    Text(pkg.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f, fill = false))
+                    if (pkg.popular) { Spacer(Modifier.width(6.dp)); InfoPill(stringResource(R.string.popular), maxLines = 1) }
                 }
                 Text(
                     if (pkg.priceType == PriceType.FIXED) rupees(pkg.price) else stringResource(R.string.from_price, rupees(pkg.price)),

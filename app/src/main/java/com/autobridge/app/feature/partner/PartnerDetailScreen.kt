@@ -29,6 +29,7 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PartnerDetailScreen(onBack: () -> Unit, onBook: (partnerId: String, packageId: String?) -> Unit, vm: PartnerDetailViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
@@ -87,7 +88,7 @@ fun PartnerDetailScreen(onBack: () -> Unit, onBook: (partnerId: String, packageI
                     }
                 }
                 item {
-                    Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { Intents.directions(context, p.location, p.name) }) { Icon(Icons.Filled.Directions, null); Spacer(Modifier.width(4.dp)); Text(stringResource(R.string.directions)) }
                         if (p.phone.isNotBlank()) OutlinedButton(onClick = { Intents.dial(context, p.phone) }) { Icon(Icons.Filled.Call, null); Spacer(Modifier.width(4.dp)); Text(stringResource(R.string.call)) }
                         if (p.whatsapp.isNotBlank()) OutlinedButton(onClick = { Intents.whatsApp(context, p.whatsapp) }) { Icon(Icons.Filled.Chat, null); Spacer(Modifier.width(4.dp)); Text(stringResource(R.string.whatsapp)) }

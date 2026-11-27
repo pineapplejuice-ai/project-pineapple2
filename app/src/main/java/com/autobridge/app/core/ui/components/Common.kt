@@ -162,9 +162,9 @@ fun PhotoPlaceholder(icon: ImageVector, modifier: Modifier = Modifier, seed: Int
 }
 
 @Composable
-fun InfoPill(text: String, modifier: Modifier = Modifier, container: Color = MaterialTheme.colorScheme.surfaceVariant, content: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
+fun InfoPill(text: String, modifier: Modifier = Modifier, maxLines: Int = Int.MAX_VALUE, container: Color = MaterialTheme.colorScheme.surfaceVariant, content: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
     Surface(color = container, shape = RoundedCornerShape(50), modifier = modifier) {
-        Text(text, style = MaterialTheme.typography.labelSmall, color = content, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
+        Text(text, style = MaterialTheme.typography.labelSmall, color = content, maxLines = maxLines, softWrap = maxLines != 1, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
     }
 }
 
