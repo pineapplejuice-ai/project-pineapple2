@@ -58,7 +58,7 @@ class FusedLocationProvider(private val context: Context) : LocationProvider {
 @Singleton
 class ConnectivityObserver @Inject constructor(@dagger.hilt.android.qualifiers.ApplicationContext private val context: Context) {
     val isOnline: Flow<Boolean> = callbackFlow {
-        val cm = context.getSystemService(ConnectivityManager::class.java)
+        val cm = checkNotNull(context.getSystemService(ConnectivityManager::class.java))
         fun current(): Boolean = cm.getNetworkCapabilities(cm.activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) { trySend(true) }

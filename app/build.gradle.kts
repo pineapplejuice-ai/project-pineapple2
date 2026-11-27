@@ -24,6 +24,7 @@ fun localProp(name: String): String = (localProps.getProperty(name) ?: System.ge
 android {
     namespace = "com.autobridge.app"
     compileSdk = 35
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "com.autobridge.app"

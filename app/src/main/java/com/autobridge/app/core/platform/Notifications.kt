@@ -51,7 +51,7 @@ class AndroidBookingNotifier(private val context: Context) : BookingNotifier {
 
     companion object {
         fun createChannel(context: Context) {
-            val nm = context.getSystemService(NotificationManager::class.java)
+            val nm = context.getSystemService(NotificationManager::class.java) ?: return
             nm.createNotificationChannel(
                 NotificationChannel(CHANNEL_BOOKINGS, context.getString(R.string.notif_channel_bookings), NotificationManager.IMPORTANCE_DEFAULT),
             )
